@@ -2,6 +2,7 @@ package Pdo
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/newgolibs/goorm"
     "github.com/newgolibs/goorm/test/Pdo/selectall_253_0_test"
     "log"
@@ -29,10 +30,11 @@ func (Selectall_253_0) run(input, arg interface{}) interface{} {
 	// 生成链接对象
 	pdo := goorm.Pdo{Pdoconfig: pdoconfig}
 	pdo.Begin()
+	defer pdo.Commit()
 	//初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})
 	v:=pdo.SelectAll(arg2["sql"].(string), arg2["binds"].([]interface{}))
-	pdo.Commit()
 	marshal, _ := json.Marshal(v)
+	fmt.Printf("%+v\n", []interface{}{string(marshal)})
 	return string(marshal)
 }

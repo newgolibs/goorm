@@ -24,8 +24,9 @@ func TestPdo_insert_251_0(t *testing.T) {
 
 func (Insert_251_0) run(input, arg interface{}) interface{} {
 	defer func() {
-		p:=recover()
-		fmt.Printf("%+v\n", []interface{}{p})
+		if err := recover(); err != nil {
+			fmt.Printf("%+v\n", []interface{}{err, "recover()"})
+		}
 	}()
 
 	// 配置还原成对象
@@ -33,9 +34,8 @@ func (Insert_251_0) run(input, arg interface{}) interface{} {
 	json.Unmarshal(input.([]byte), &pdoconfig)
 	// 生成链接对象
 	pdo := goorm.Pdo{Pdoconfig: pdoconfig}
-	pdo.Begin()
+	defer pdo.Commit()
 	var arg2 = arg.(map[string]interface{})
 	num := pdo.Insert(arg2["sql"].(string), arg2["binds"].([]interface{}))
-	pdo.Commit()
 	return num
 }

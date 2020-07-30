@@ -2,8 +2,9 @@ package goorm
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
+	"runtime"
 	"strconv"
 	"sync"
 )
@@ -24,8 +25,8 @@ func (this *Pdoconfig) SqldbPool() *sql.DB {
 		//这里数据库账户密码，ip，端口。配置错误，都不会导致崩溃。崩溃是产生在查询的时候
 		db, err = sql.Open("mysql", this.LinkString())
 		if err != nil {
-			log.Printf("链接数据库错误,配置：%+v", this)
-			log.Panic(err)
+			_, file, line, _ := runtime.Caller(0)
+			panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n",[]interface{}{err},file, line))
 		}
 		// 这个是web服务，所以链接上去了，别想着关闭了。
 		// defer db.Close()

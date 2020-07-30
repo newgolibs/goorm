@@ -25,6 +25,6 @@ func TestPdoconfig_SqldbPool_249_0(t *testing.T) {
 func (SqldbPool_249_0) run(input, arg interface{}) interface{} {
 	var input2 = input.(map[string]interface{})
 	var a = goorm.Pdoconfig{User: input2["user"].(string), Password: input2["password"].(string), DB: input2["db"].(string), Tns: input2["tns"].(string), Port: input2["port"].(int)}
-	fmt.Printf("%+v\n", []interface{}{a.LinkString(), a.SqldbPool()})
+	fmt.Printf("%+v\n", []interface{}{a.LinkString(), a.SqldbPool(),a.SqldbPool().Stats()})
 	return reflect.TypeOf(a.SqldbPool()).String()
 }

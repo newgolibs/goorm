@@ -20,7 +20,7 @@ func  DataProvider() []interface{} {
         []interface{}{
             []byte(`{"Tns":"172.30.0.6","User":"darkhold","Password":"6532b3c13C1491FB","Port":3306,"DB":"allinone"}`),
             3,
-            map[string]interface{}{"sql":"update a set dd=?","binds":[]interface{}{"ok3" }},
+            map[string]interface{}{"sql":"update a set dd=? where id<9","binds":[]interface{}{"ok3" }},
             " - id=104",
         },
 	}

@@ -2,7 +2,9 @@ package goorm
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"runtime"
 )
 
@@ -13,23 +15,52 @@ func (this *Pdo) Begin() {
 	var err error
 	this.Tx, err = this.Pdoconfig.SqldbPool().Begin()
 	if err != nil {
-		fmt.Printf("err:%+v\n", err)
+		_, file, line, _ := runtime.Caller(0)
+		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
 	}
+}
+
+/**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
+func (this *Pdo) Rollback() error {
+	// 根本没数据库链接，返回
+	if this.Tx == nil {
+		return nil
+	}
+	var err error
+	err = this.Tx.Rollback()
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
+	}
+	this.Tx = nil
+	return err
 }
 
 /**
 提交事务
 */
-func (this *Pdo) Commit() {
+func (this *Pdo) Commit() error {
+	// 根本没数据库链接，返回
+	if this.Tx == nil {
+		return nil
+	}
 	var err error
 	err = this.Tx.Commit()
 	if err != nil {
-		fmt.Printf("err:%+v\n", err)
+		_, file, line, _ := runtime.Caller(0)
+		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
 	}
+	// 再开一条事务
+	this.Tx = nil
+	return err
 }
 
 /**    执行Query方法，返回rows    */
 func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []interface{}, []sql.RawBytes, []string) {
+	// 如果数据库还没链接，那么初始化一下
+	if this.Tx == nil {
+		this.Begin()
+	}
 	rows, err := this.Tx.Query(sqlstring, bindarray...)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
@@ -58,8 +89,8 @@ func (this *Pdo) SelectAll(sqlstring string, bindarray []interface{}) []map[stri
 	rows, scanArgs, values, columns := this.query(sqlstring, bindarray)
 	defer rows.Close()
 	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
-	var rowMaps []map[string]string
-	rowMap := make(map[string]string)
+	var rowMaps_All []map[string]string
+	var rowMap = make(map[string]string)
 	for rows.Next() {
 		rows.Scan(scanArgs...)
 		for i, col := range values {
@@ -67,10 +98,33 @@ func (this *Pdo) SelectAll(sqlstring string, bindarray []interface{}) []map[stri
 			if col != nil {
 				rowMap[columns[i]] = string(col)
 			}
-			rowMaps = append(rowMaps, rowMap)
 		}
+		// 因为rowmap的底层是一个value是引用，所以会导致后面的覆盖了前面，写的始终是一个值
+		rowMap_temp := make(map[string]string)
+		marshal, _ := json.Marshal(rowMap)
+		json.Unmarshal(marshal, &rowMap_temp)
+		rowMaps_All = append(rowMaps_All, rowMap_temp)
 	}
-	return rowMaps
+	return rowMaps_All
+}
+
+/**    查询多行数据，返回struct对象的数组    */
+func (this *Pdo) SelectallObject(sql string, bindarray []interface{}, orm_ptr interface{}) {
+	orm_ptr_ref := reflect.ValueOf(orm_ptr)
+	orm_ptr_value := orm_ptr_ref.Elem()
+	if orm_ptr_value.Kind() != reflect.Slice {
+		panic("传入的类型应该是一个切片：[]xxxx，现在是：" + orm_ptr_value.Kind().String())
+	}
+	all := this.SelectAll(sql, bindarray)
+	of := reflect.TypeOf(orm_ptr)
+	for _, item := range all {
+		one_orm_ptr := reflect.New(of.Elem().Elem())
+		params := make([]reflect.Value, 1) // 参数
+		params[0] = reflect.ValueOf(item)
+		one_orm_ptr.MethodByName("Data_to_struct").Call(params)
+		orm_ptr_value.Set(reflect.Append(orm_ptr_value, one_orm_ptr.Elem()))
+	}
+
 }
 
 /**    返回一行数据，一般是返回一个结构体    */
@@ -78,7 +132,7 @@ func (this *Pdo) SelectOne(sqlstring string, bindarray []interface{}) map[string
 	rows, scanArgs, values, columns := this.query(sqlstring, bindarray)
 	defer rows.Close()
 	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
-	rowMap := make(map[string]string)
+	var rowMap = make(map[string]string)
 	for rows.Next() {
 		rows.Scan(scanArgs...)
 		for i, col := range values {
@@ -92,19 +146,31 @@ func (this *Pdo) SelectOne(sqlstring string, bindarray []interface{}) map[string
 	return rowMap
 }
 
+/**    查询一行数据返回一个结构体    */
+func (this *Pdo) SelectOneObject(sql string, bindarray []interface{}, orm_ptr PdoOrmInterface) {
+	one := this.SelectOne(sql, bindarray)
+	orm_ptr.Data_to_struct(one)
+}
+
 /**
 正在执行sql的部分代码
 */
 func (this *Pdo) pdoexec(sql string, bindarray []interface{}) sql.Result {
+	// 如果数据库还没链接，那么初始化一下
+	if this.Tx == nil {
+		this.Begin()
+	}
 	// defer this.Tx.Rollback() // The rollback will be ignored if the tx has been committed later in the function.
 	stmt, err := this.Tx.Prepare(sql)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
+		this.Rollback()
 		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v \033[0m\n", []interface{}{err}, file, line))
 	}
 	defer stmt.Close() // Prepared statements take up server resources and should be closed after use.
 	Result, err := stmt.Exec(bindarray...)
 	if err != nil {
+		this.Rollback()
 		_, file, line, _ := runtime.Caller(0)
 		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v \033[0m\n", []interface{}{err}, file, line))
 	}

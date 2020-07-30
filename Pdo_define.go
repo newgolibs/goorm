@@ -3,23 +3,30 @@ import (
         "database/sql"
 )
 
+//对象必须实现的接口方法
 type PdoInterface interface {
+    /**    写入数据，返回最新写入数据的自增id    */
+    Insert(sql string,bindarray []interface{})int
+    /**    执行指定的SQL语句，返回影响到的条数    */
+    Exec(sql string,bindarray []interface{})int
+    /**    正在执行sql的部分代码，更新删除写入之类的操作    */
+    pdoexec(sql string,bindarray []interface{})sql.Result
+    /**    返回一行数据，map类型    */
+    SelectOne(sql string,bindarray []interface{})map[string]string
+    /**    查询一行数据返回一个结构体    */
+    SelectOneObject(sql string,bindarray []interface{},orm_ptr PdoOrmInterface)
+    /**    查询多行数据，返回map类型    */
+    SelectAll(sql string,bindarray []interface{})[]map[string]string
+    /**    查询多行数据，返回struct对象的数组    */
+    SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})
     /**    开启事务    */
     Begin()
     /**    提交事务    */
-    Commit()
-    /**    执行指定的SQL语句，返回影响到的条数    */
-    Exec(sql string,bindarray []interface{})int
-    /**    写入数据，返回最新写入数据的自增id    */
-    Insert(sql string,bindarray []interface{})int
-    /**    正在执行sql的部分代码，更新删除写入之类的操作    */
-    pdoexec(sql string,bindarray []interface{})sql.Result
+    Commit()error
     /**    执行Query方法，返回rows    */
     query(sql string,bindarray []interface{})(*sql.Rows,[]interface{},[]sql.RawBytes,[]string)
-    /**    查询多行数据    */
-    SelectAll(sql string,bindarray []interface{})[]map[string]string
-    /**    返回一行数据，一般是返回一个结构体    */
-    SelectOne(sql string,bindarray []interface{})map[string]string
+    /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
+    Rollback()error
 
 }
 
