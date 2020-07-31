@@ -7,3 +7,4 @@ php_errors.log
 *.sql
 log@*.json
 vendor/**/.git
+*7z
