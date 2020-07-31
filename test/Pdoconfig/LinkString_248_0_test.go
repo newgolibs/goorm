@@ -21,7 +21,7 @@ func TestPdoconfig_LinkString_248_0(t *testing.T) {
 }
 
 func (LinkString_248_0) run(input, arg interface{}) interface{} {
-	var input2 = input.(map[string]interface{})
-	var a = goorm.Pdoconfig{User: input2["user"].(string), Password: input2["password"].(string), DB: input2["db"].(string), Tns: input2["tns"].(string), Port: input2["port"].(int)}
+	var a = goorm.Pdoconfig{}
+	a.SqldbPoolFromBytes(input.([]byte))
 	return a.LinkString()
 }

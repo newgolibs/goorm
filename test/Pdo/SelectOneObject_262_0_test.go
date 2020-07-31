@@ -7,7 +7,6 @@ import (
 	"github.com/newgolibs/goorm/test/Pdo/SelectOneObject_262_0_test"
 	"github.com/stretchr/testify/assert"
 	"log"
-	"reflect"
 	"testing"
 )
 
@@ -39,26 +38,4 @@ func (SelectOneObject_262_0) run(input, arg interface{}) interface{} {
 	marshal, _ := json.Marshal(borm)
 	return string(marshal)
 
-}
-
-type borm struct {
-	A1 string `db:"a1"`
-	Dd string `db:"dd"`
-	Id int    `db:"id"`
-	goorm.PdoOrm
-}
-
-/**
-具体的struct对象里面执行反射
-*/
-func (this *borm) Data_to_struct(data map[string]string) {
-	t := reflect.TypeOf(*this)
-	vv := reflect.ValueOf(this).Elem() // 为了改变对象的内部值，需使用引用
-	for i := 0; i < t.NumField(); i++ {
-		fieldName := t.Field(i).Tag.Get("db")
-		if fieldName == "" {
-			continue
-		}
-		this.FixValue(vv.FieldByName(t.Field(i).Name), data[fieldName])
-	}
 }

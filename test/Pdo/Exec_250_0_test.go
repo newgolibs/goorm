@@ -3,7 +3,7 @@ package Pdo
 import (
 	"encoding/json"
 	"github.com/newgolibs/goorm"
-	"github.com/newgolibs/goorm/test/pdo/Exec_250_0_test"
+	"github.com/newgolibs/goorm/test/Pdo/Exec_250_0_test"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"

@@ -14,7 +14,7 @@ type PdoInterface interface {
     /**    返回一行数据，map类型    */
     SelectOne(sql string,bindarray []interface{})map[string]string
     /**    查询一行数据返回一个结构体    */
-    SelectOneObject(sql string,bindarray []interface{},orm_ptr PdoOrmInterface)
+    SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})
     /**    查询多行数据，返回map类型    */
     SelectAll(sql string,bindarray []interface{})[]map[string]string
     /**    查询多行数据，返回struct对象的数组    */
@@ -38,7 +38,7 @@ type Pdo struct
     /*数据库配置*/
     Pdoconfig Pdoconfig
     /*事务链接句柄*/
-    Tx *sql.Tx
+    tx *sql.Tx
 }
 
 

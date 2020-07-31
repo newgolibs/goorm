@@ -15,6 +15,7 @@ type  Rollback_254_0 struct {
 }
 
 func TestPdo_Rollback_254_0(t *testing.T){
+
     log.SetFlags(log.Lshortfile | log.LstdFlags)
 
     for _, v := range Rollback_254_0_test.DataProvider() {

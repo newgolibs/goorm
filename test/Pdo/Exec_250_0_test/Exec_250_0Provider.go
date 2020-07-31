@@ -1,6 +1,7 @@
 package Exec_250_0_test
-
+//需要导入外部类库
 import (
+    "strconv"
     "time"
 )
 
@@ -20,7 +21,7 @@ func  DataProvider() []interface{} {
         []interface{}{
             []byte(`{"Tns":"172.30.0.6","User":"darkhold","Password":"6532b3c13C1491FB","Port":3306,"DB":"allinone"}`),
             3,
-            map[string]interface{}{"sql":"update a set dd=? where id<9","binds":[]interface{}{"ok3" }},
+            map[string]interface{}{"sql":"update a set dd=? where id<7","binds":[]interface{}{"ok3" +strconv.FormatInt(time.Now().Unix(),10) }},
             " - id=104",
         },
 	}

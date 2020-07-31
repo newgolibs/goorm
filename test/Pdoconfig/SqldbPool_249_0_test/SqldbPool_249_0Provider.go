@@ -8,7 +8,7 @@ func  DataProvider() []interface{} {
 
     return []interface{}{
         []interface{}{
-            map[string]interface{}{"tns":"172.30.0.6","user":"darkhold","password":"6532b3c13C1491FB","port":3306,"db":"allinone"},
+            []byte(`{"Tns":"172.30.0.6","User":"darkhold","Password":"6532b3c13C1491FB","Port":3306,"DB":"allinone"}`),
             "*sql.DB",
             "",
             " - id=102",

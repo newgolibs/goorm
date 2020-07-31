@@ -8,8 +8,8 @@ func  DataProvider() []interface{} {
 
     return []interface{}{
         []interface{}{
-            map[string]interface{}{"tns":"127.0.0.1","user":"a","password":"b","port":3306,"db":"allinone"},
-            "a:b@tcp(127.0.0.1:3306)/allinone?charset=utf8mb4",
+            []byte(`{"Tns":"172.30.0.6","User":"darkhold","Password":"6532b3c13C1491FB","Port":3306,"DB":"allinone"}`),
+            "darkhold:6532b3c13C1491FB@tcp(172.30.0.6:3306)/allinone?charset=utf8mb4",
             "",
             " - id=101",
         },

@@ -13,7 +13,7 @@ import (
 */
 func (this *Pdo) Begin() {
 	var err error
-	this.Tx, err = this.Pdoconfig.SqldbPool().Begin()
+	this.tx, err = this.Pdoconfig.SqldbPool().Begin()
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
@@ -23,16 +23,16 @@ func (this *Pdo) Begin() {
 /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
 func (this *Pdo) Rollback() error {
 	// 根本没数据库链接，返回
-	if this.Tx == nil {
+	if this.tx == nil {
 		return nil
 	}
 	var err error
-	err = this.Tx.Rollback()
+	err = this.tx.Rollback()
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
 	}
-	this.Tx = nil
+	this.tx = nil
 	return err
 }
 
@@ -41,27 +41,27 @@ func (this *Pdo) Rollback() error {
 */
 func (this *Pdo) Commit() error {
 	// 根本没数据库链接，返回
-	if this.Tx == nil {
+	if this.tx == nil {
 		return nil
 	}
 	var err error
-	err = this.Tx.Commit()
+	err = this.tx.Commit()
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
 	}
 	// 再开一条事务
-	this.Tx = nil
+	this.tx = nil
 	return err
 }
 
 /**    执行Query方法，返回rows    */
 func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []interface{}, []sql.RawBytes, []string) {
 	// 如果数据库还没链接，那么初始化一下
-	if this.Tx == nil {
+	if this.tx == nil {
 		this.Begin()
 	}
-	rows, err := this.Tx.Query(sqlstring, bindarray...)
+	rows, err := this.tx.Query(sqlstring, bindarray...)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
@@ -116,12 +116,10 @@ func (this *Pdo) SelectallObject(sql string, bindarray []interface{}, orm_ptr in
 		panic("传入的类型应该是一个切片：[]xxxx，现在是：" + orm_ptr_value.Kind().String())
 	}
 	all := this.SelectAll(sql, bindarray)
-	of := reflect.TypeOf(orm_ptr)
+	orm_ptr_type := reflect.TypeOf(orm_ptr)
 	for _, item := range all {
-		one_orm_ptr := reflect.New(of.Elem().Elem())
-		params := make([]reflect.Value, 1) // 参数
-		params[0] = reflect.ValueOf(item)
-		one_orm_ptr.MethodByName("Data_to_struct").Call(params)
+		one_orm_ptr := reflect.New(orm_ptr_type.Elem().Elem())
+		Map_to_struct(item, one_orm_ptr.Interface())
 		orm_ptr_value.Set(reflect.Append(orm_ptr_value, one_orm_ptr.Elem()))
 	}
 
@@ -147,9 +145,9 @@ func (this *Pdo) SelectOne(sqlstring string, bindarray []interface{}) map[string
 }
 
 /**    查询一行数据返回一个结构体    */
-func (this *Pdo) SelectOneObject(sql string, bindarray []interface{}, orm_ptr PdoOrmInterface) {
+func (this *Pdo) SelectOneObject(sql string, bindarray []interface{}, orm_ptr interface{}) {
 	one := this.SelectOne(sql, bindarray)
-	orm_ptr.Data_to_struct(one)
+	Map_to_struct(one, orm_ptr)
 }
 
 /**
@@ -157,11 +155,11 @@ func (this *Pdo) SelectOneObject(sql string, bindarray []interface{}, orm_ptr Pd
 */
 func (this *Pdo) pdoexec(sql string, bindarray []interface{}) sql.Result {
 	// 如果数据库还没链接，那么初始化一下
-	if this.Tx == nil {
+	if this.tx == nil {
 		this.Begin()
 	}
-	// defer this.Tx.Rollback() // The rollback will be ignored if the tx has been committed later in the function.
-	stmt, err := this.Tx.Prepare(sql)
+	// defer this.tx.Rollback() // The rollback will be ignored if the tx has been committed later in the function.
+	stmt, err := this.tx.Prepare(sql)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		this.Rollback()
