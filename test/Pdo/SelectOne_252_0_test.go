@@ -27,7 +27,7 @@ func (SelectOne_252_0) run(input, arg interface{}) interface{} {
 	var pdoconfig goorm.Pdoconfig
 	json.Unmarshal(input.([]byte), &pdoconfig)
 	// 生成链接对象
-	pdo := goorm.Pdo{Pdoconfig: pdoconfig}
+	pdo := goorm.Pdo{Pdoconfig: &pdoconfig}
 	defer pdo.Commit()
 
 	db := pdoconfig.SqldbPool()

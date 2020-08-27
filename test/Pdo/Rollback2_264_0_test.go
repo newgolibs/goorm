@@ -25,7 +25,7 @@ func TestPdo_Rollback2_264_0(t *testing.T){
 func (Rollback2_264_0) run(input, arg interface{}) interface{} {
 	var a =goorm.Pdoconfig{}
 	a.SqldbPoolFromBytes(input.([]byte))
-	var pdo =goorm.Pdo{Pdoconfig: a}
+	var pdo =goorm.Pdo{Pdoconfig: &a}
 	arg2:=arg.([]map[string]interface{})
 	pdo.Exec(arg2[0]["sql"].(string),arg2[0]["binds"].([]interface{}))
 	pdo.Rollback()
@@ -36,7 +36,7 @@ func (Rollback2_264_0) run(input, arg interface{}) interface{} {
 
 	var b =goorm.Pdoconfig{}
 	b.SqldbPoolFromBytes(input.([]byte))
-	var pdo2 =goorm.Pdo{Pdoconfig: b}
+	var pdo2 =goorm.Pdo{Pdoconfig: &b}
 	fmt.Printf("%+v\n", []interface{}{pdo2.Pdoconfig.SqldbPool().Stats()})
 	one2 := pdo2.SelectOne("select * from a where id=?", []interface{}{14})
 	fmt.Printf("%+v\n", []interface{}{"one2=>",one2})

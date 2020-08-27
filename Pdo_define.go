@@ -36,7 +36,7 @@ type PdoInterface interface {
 type Pdo struct
 {
     /*数据库配置*/
-    Pdoconfig Pdoconfig
+    Pdoconfig *Pdoconfig
     /*事务链接句柄*/
     tx *sql.Tx
 }
