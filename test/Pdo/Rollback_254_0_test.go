@@ -1,7 +1,6 @@
 package Pdo
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/newgolibs/goorm"
 	"github.com/newgolibs/goorm/test/Pdo/Rollback_254_0_test"
@@ -10,16 +9,15 @@ import (
 	"testing"
 )
 
-type  Rollback_254_0 struct {
-
+type Rollback_254_0 struct {
 }
 
-func TestPdo_Rollback_254_0(t *testing.T){
+func TestPdo_Rollback_254_0(t *testing.T) {
 
-    log.SetFlags(log.Lshortfile | log.LstdFlags)
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
-    for _, v := range Rollback_254_0_test.DataProvider() {
-		//fmt.Printf("k=%+v，v=%+v\n", k, v)
+	for _, v := range Rollback_254_0_test.DataProvider() {
+		// fmt.Printf("k=%+v，v=%+v\n", k, v)
 		assert.Equal(t, v.([]interface{})[1], Rollback_254_0{}.run(v.([]interface{})[0], v.([]interface{})[2]))
 	}
 }
@@ -33,12 +31,12 @@ func (Rollback_254_0) run(input, arg interface{}) interface{} {
 
 	// 配置还原成对象
 	var pdoconfig goorm.Pdoconfig
-	json.Unmarshal(input.([]byte), &pdoconfig)
+	pdoconfig.SqldbPoolFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{Pdoconfig: &pdoconfig}
+	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
 	defer pdo.Commit()
 	var arg2 = arg.([]map[string]interface{})
-	num := pdo.Insert(arg2[0]["sql"].(string), arg2[0]["binds"].([]interface{}))
+	num, _ := pdo.Insert(arg2[0]["sql"].(string), arg2[0]["binds"].([]interface{}))
 	fmt.Printf("%+v\n", []interface{}{"11111111111111"})
 	pdo.Insert(arg2[1]["sql"].(string), arg2[1]["binds"].([]interface{}))
 	fmt.Printf("%+v\n", []interface{}{"22222222222222"})

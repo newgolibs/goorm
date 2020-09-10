@@ -19,6 +19,9 @@ func Map_to_struct(data map[string]string, struct_ptr interface{}) {
 		if f.Kind() == reflect.Int {
 			val, _ := strconv.Atoi(data[fieldName]) // 通过tag获取列数据
 			f.SetInt(int64(val))
+		} else if f.Kind() == reflect.Float32 {
+			val, _ := strconv.Atoi(data[fieldName]) // 通过tag获取列数据
+			f.SetFloat(float64(val))
 		} else if f.Kind() == reflect.String {
 			f.SetString(data[fieldName])
 		} else {

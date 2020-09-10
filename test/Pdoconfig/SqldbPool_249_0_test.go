@@ -31,7 +31,7 @@ func (SqldbPool_249_0) run(input, arg interface{}) interface{} {
 
 	b := goorm.Pdoconfig{}
 	b.SqldbPoolFromBytes(input.([]byte))
-	fmt.Printf("%+v\n", []interface{}{gostring.JsonMarshalIndent(b.NewSqldbPool().Stats())})
+	fmt.Printf("%+v\n", []interface{}{gostring.JsonMarshalIndent(b.SqldbPool().Stats())})
 
 	return reflect.TypeOf(a.SqldbPool()).String()
 }

@@ -27,7 +27,7 @@ func (SelectOneObject_262_0) run(input, arg interface{}) interface{} {
 	var pdoconfig goorm.Pdoconfig
 	pdoconfig.SqldbPoolFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{Pdoconfig: &pdoconfig}
+	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
 	defer pdo.Commit()
 
 	// 初始化一个空壳的对象

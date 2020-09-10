@@ -1,7 +1,6 @@
 package Pdo
 
 import (
-	"encoding/json"
 	"github.com/newgolibs/goorm"
 	"github.com/newgolibs/goorm/test/Pdo/Exec_250_0_test"
 	"github.com/stretchr/testify/assert"
@@ -22,13 +21,13 @@ func TestPdo_Exec_250_0(t *testing.T) {
 }
 
 func (Exec_250_0) run(input, arg interface{}) interface{} {
-	//配置还原成对象
-	var pdoconfig goorm.Pdoconfig;
-	json.Unmarshal(input.([]byte),&pdoconfig)
-	//生成链接对象
-	pdo := goorm.Pdo{Pdoconfig: &pdoconfig}
+	// 配置还原成对象
+	var pdoconfig goorm.Pdoconfig
+	pdoconfig.SqldbPoolFromBytes(input.([]byte))
+	// 生成链接对象
+	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
 	defer pdo.Commit()
-	var arg2=arg.(map[string]interface{})
-	exec := pdo.Exec(arg2["sql"].(string), arg2["binds"].([]interface{}))
+	var arg2 = arg.(map[string]interface{})
+	exec, _ := pdo.Exec(arg2["sql"].(string), arg2["binds"].([]interface{}))
 	return exec
 }

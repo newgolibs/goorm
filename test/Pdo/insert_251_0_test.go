@@ -1,7 +1,6 @@
 package Pdo
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/newgolibs/goorm"
 	"github.com/newgolibs/goorm/test/Pdo/insert_251_0_test"
@@ -31,11 +30,11 @@ func (Insert_251_0) run(input, arg interface{}) interface{} {
 
 	// 配置还原成对象
 	var pdoconfig goorm.Pdoconfig
-	json.Unmarshal(input.([]byte), &pdoconfig)
+	pdoconfig.SqldbPoolFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{Pdoconfig: &pdoconfig}
+	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
 	defer pdo.Commit()
 	var arg2 = arg.(map[string]interface{})
-	num := pdo.Insert(arg2["sql"].(string), arg2["binds"].([]interface{}))
+	num, _ := pdo.Insert(arg2["sql"].(string), arg2["binds"].([]interface{}))
 	return num
 }

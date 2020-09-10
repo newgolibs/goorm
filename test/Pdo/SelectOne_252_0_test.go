@@ -25,9 +25,9 @@ func (SelectOne_252_0) run(input, arg interface{}) interface{} {
 
 	// 配置还原成对象
 	var pdoconfig goorm.Pdoconfig
-	json.Unmarshal(input.([]byte), &pdoconfig)
+	pdoconfig.SqldbPoolFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{Pdoconfig: &pdoconfig}
+	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
 	defer pdo.Commit()
 
 	db := pdoconfig.SqldbPool()
@@ -35,9 +35,8 @@ func (SelectOne_252_0) run(input, arg interface{}) interface{} {
 
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})
-	v := pdo.SelectOne(arg2["sql"].(string), arg2["binds"].([]interface{}))
+	v, _ := pdo.SelectOne(arg2["sql"].(string), arg2["binds"].([]interface{}))
 	marshal, _ := json.Marshal(v)
-
 
 	return string(marshal)
 }
