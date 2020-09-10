@@ -1,4 +1,4 @@
-module github.com/newgolibs/goorm
+module github.com/newgolibs/goorm/v2
 
 go 1.14
 
