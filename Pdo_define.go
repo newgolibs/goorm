@@ -57,8 +57,11 @@ type Pdo struct
 
 
 
+func (this *Pdo) NewPdoMiddleware() *PdoMiddleware{
+    return &PdoMiddleware{Pdo:this}
+}
 /**
-* 中间件的扩展类
+* 中间件的扩展类middleware
 */
 type PdoMiddleware struct{
     Insertindex int
@@ -79,7 +82,7 @@ type PdoMiddleware struct{
     RollbackHandleFuncs []Pdo_RollbackHandleFunc
     SelectVarindex int
     SelectVarHandleFuncs []Pdo_SelectVarHandleFunc
-    Pdo Pdo
+    Pdo *Pdo
     //日志记录的目标文件，
     Logger *log.Logger
 }

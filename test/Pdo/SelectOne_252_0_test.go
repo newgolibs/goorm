@@ -24,14 +24,13 @@ func TestPdo_SelectOne_252_0(t *testing.T) {
 func (SelectOne_252_0) run(input, arg interface{}) interface{} {
 
 	// 配置还原成对象
-	var pdoconfig goorm.Pdoconfig
-	pdoconfig.SqldbPoolFromBytes(input.([]byte))
+	var pdoconfig *goorm.Pdoconfig = goorm.NewPdoconfigFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
+	pdo := pdoconfig.NewPdo()
 	defer pdo.Commit()
 
-	db := pdoconfig.SqldbPool()
-	fmt.Printf("%+v\n", []interface{}{"pdoconfig.SqldbPool()", pdoconfig.SqldbPool(), db.Stats()})
+	db := pdoconfig.Sqldb
+	fmt.Printf("%+v\n", []interface{}{"pdoconfig.SqldbPool()", pdoconfig.Sqldb, db.Stats()})
 
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})

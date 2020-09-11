@@ -22,10 +22,9 @@ func TestPdo_selectvar_270_0(t *testing.T) {
 
 func (Selectvar_270_0) run(input, arg interface{}) interface{} {
 	// 配置还原成对象
-	var pdoconfig goorm.Pdoconfig
-	pdoconfig.SqldbPoolFromBytes(input.([]byte))
+	var pdoconfig *goorm.Pdoconfig = goorm.NewPdoconfigFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
+	pdo := pdoconfig.NewPdo()
 	var a []interface{}
 	num, _ := pdo.SelectVar(arg.(string), a)
 	return num

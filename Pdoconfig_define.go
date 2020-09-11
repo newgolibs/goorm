@@ -2,65 +2,96 @@ package goorm
 
 import (
 	"database/sql"
+	"log"
+	"time"
 )
 
-// 对象必须实现的接口方法
+//对象必须实现的接口方法
 type PdoconfigInterface interface {
-	/**    链接数据库，拼接起来的字符串    */
-	LinkString() string
-	/**    链接池    */
-	SqldbPool() *sql.DB
-	/**    独立的新的数据库连接池    */
-	NewSqldb() *sql.DB
-	/**    从json的字符串中，生成数据库连接池对象    */
-	SqldbPoolFromBytes(bytes []byte) *sql.DB
-	/**    新开事务线程    */
-	NewTX() *sql.Tx
+    /**    链接数据库，拼接起来的字符串    */
+    LinkString()string
+    /**    链接池    */
+    MakeDbPool()*Pdoconfig
+    /**    独立的新的数据库连接池    */
+    MakeSqldb()*Pdoconfig
+    /**    新开事务线程    */
+    MakeTX()*sql.Tx
+    /**    生成新的pdo对象    */
+    NewPdo()*Pdo
+
 }
 
-// 定义函数的结构体，方便扩展成中间件接
-type Pdoconfig_LinkStringHandleFunc func() string
-type Pdoconfig_SqldbPoolHandleFunc func() *sql.DB
-type Pdoconfig_NewSqldbHandleFunc func() *sql.DB
-type Pdoconfig_SqldbPoolFromBytesHandleFunc func(bytes []byte) *sql.DB
-type Pdoconfig_NewTXHandleFunc func() *sql.Tx
+//定义函数的结构体，方便扩展成中间件接
+type Pdoconfig_LinkStringHandleFunc func()string
+type Pdoconfig_MakeDbPoolHandleFunc func()*Pdoconfig
+type Pdoconfig_MakeSqldbHandleFunc func()*Pdoconfig
+type Pdoconfig_MakeTXHandleFunc func()*sql.Tx
+type Pdoconfig_NewPdoHandleFunc func()*Pdo
 
 /**
 数据库配置;
 */
-type Pdoconfig struct {
-	/*服务器地址*/
-	Tns string
-	/*账户*/
-	User string
-	/*密码*/
-	Password string
-	/*数据库*/
-	DB string
-	/*端口*/
-	Port int
-	/*数据库链接句柄*/
-	Sqldb *sql.DB
+type Pdoconfig struct
+{
+    /*服务器地址*/
+    Tns string
+    /*账户*/
+    User string
+    /*密码*/
+    Password string
+    /*数据库*/
+    DB string
+    /*端口*/
+    Port int
+    /*数据库链接句柄*/
+    Sqldb *sql.DB
 }
+
+
+
+
+
+
+
+
+
 
 /**
-* 中间件的扩展类
- */
-type PdoconfigMiddleware struct {
-	LinkStringindex               int
-	LinkStringHandleFuncs         []Pdoconfig_LinkStringHandleFunc
-	SqldbPoolindex                int
-	SqldbPoolHandleFuncs          []Pdoconfig_SqldbPoolHandleFunc
-	NewSqldbindex                 int
-	NewSqldbHandleFuncs           []Pdoconfig_NewSqldbHandleFunc
-	SqldbPoolFromBytesindex       int
-	SqldbPoolFromBytesHandleFuncs []Pdoconfig_SqldbPoolFromBytesHandleFunc
-	NewTXindex                    int
-	NewTXHandleFuncs              []Pdoconfig_NewTXHandleFunc
-	Pdoconfig                     Pdoconfig
+* 中间件的扩展类middleware
+*/
+type PdoconfigMiddleware struct{
+    LinkStringindex int
+    LinkStringHandleFuncs []Pdoconfig_LinkStringHandleFunc
+    MakeDbPoolindex int
+    MakeDbPoolHandleFuncs []Pdoconfig_MakeDbPoolHandleFunc
+    MakeSqldbindex int
+    MakeSqldbHandleFuncs []Pdoconfig_MakeSqldbHandleFunc
+    MakeTXindex int
+    MakeTXHandleFuncs []Pdoconfig_MakeTXHandleFunc
+    NewPdoindex int
+    NewPdoHandleFuncs []Pdoconfig_NewPdoHandleFunc
+    Pdoconfig *Pdoconfig
+    //日志记录的目标文件，
+    Logger *log.Logger
 }
 
+
 func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStringHandleFunc) Pdoconfig_LinkStringHandleFunc {
+    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    this.LinkStringHandleFuncs = append(this.LinkStringHandleFuncs, func() string {
+        defer func(start time.Time) {
+            if this.Logger != nil {
+                tc := time.Since(start).String()
+                this.Logger.Println("耗时 - Pdoconfig.LinkString",tc)
+            }
+        }(time.Now())
+        if this.Logger != nil {
+            this.Logger.Println("调起 - Pdoconfig.LinkString，参数： ",)
+        }
+        return this.Next_LinkString()
+    })
+
+    //
 	if this.LinkStringHandleFuncs == nil {
 		this.LinkStringHandleFuncs = make([]Pdoconfig_LinkStringHandleFunc, 0)
 	}
@@ -69,8 +100,14 @@ func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStr
 	}
 	return this.Next_LinkString
 }
-func (this *PdoconfigMiddleware) Next_LinkString() string {
-	index := this.LinkStringindex
+func (this *PdoconfigMiddleware) Next_LinkString()string{
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.LinkStringHandleFuncs) == 0 {
+		this.Add_LinkString(this.Pdoconfig.LinkString)
+	} else if this.LinkStringindex == 0 {
+		this.LinkStringHandleFuncs = append(this.LinkStringHandleFuncs, this.Pdoconfig.LinkString)
+	}
+    index := this.LinkStringindex
 	if this.LinkStringindex >= len(this.LinkStringHandleFuncs) {
 		return ""
 	}
@@ -79,81 +116,165 @@ func (this *PdoconfigMiddleware) Next_LinkString() string {
 	return this.LinkStringHandleFuncs[index]()
 }
 
-func (this *PdoconfigMiddleware) Add_SqldbPool(middlewares ...Pdoconfig_SqldbPoolHandleFunc) Pdoconfig_SqldbPoolHandleFunc {
-	if this.SqldbPoolHandleFuncs == nil {
-		this.SqldbPoolHandleFuncs = make([]Pdoconfig_SqldbPoolHandleFunc, 0)
+func (this *PdoconfigMiddleware) Add_MakeDbPool(middlewares ...Pdoconfig_MakeDbPoolHandleFunc) Pdoconfig_MakeDbPoolHandleFunc {
+    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    this.MakeDbPoolHandleFuncs = append(this.MakeDbPoolHandleFuncs, func() *Pdoconfig {
+        defer func(start time.Time) {
+            if this.Logger != nil {
+                tc := time.Since(start).String()
+                this.Logger.Println("耗时 - Pdoconfig.MakeDbPool",tc)
+            }
+        }(time.Now())
+        if this.Logger != nil {
+            this.Logger.Println("调起 - Pdoconfig.MakeDbPool，参数： ",)
+        }
+        return this.Next_MakeDbPool()
+    })
+
+    //
+	if this.MakeDbPoolHandleFuncs == nil {
+		this.MakeDbPoolHandleFuncs = make([]Pdoconfig_MakeDbPoolHandleFunc, 0)
 	}
 	for _, mid := range middlewares {
-		this.SqldbPoolHandleFuncs = append(this.SqldbPoolHandleFuncs, mid)
+		this.MakeDbPoolHandleFuncs = append(this.MakeDbPoolHandleFuncs, mid)
 	}
-	return this.Next_SqldbPool
+	return this.Next_MakeDbPool
 }
-func (this *PdoconfigMiddleware) Next_SqldbPool() *sql.DB {
-	index := this.SqldbPoolindex
-	if this.SqldbPoolindex >= len(this.SqldbPoolHandleFuncs) {
+func (this *PdoconfigMiddleware) Next_MakeDbPool()*Pdoconfig{
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.MakeDbPoolHandleFuncs) == 0 {
+		this.Add_MakeDbPool(this.Pdoconfig.MakeDbPool)
+	} else if this.MakeDbPoolindex == 0 {
+		this.MakeDbPoolHandleFuncs = append(this.MakeDbPoolHandleFuncs, this.Pdoconfig.MakeDbPool)
+	}
+    index := this.MakeDbPoolindex
+	if this.MakeDbPoolindex >= len(this.MakeDbPoolHandleFuncs) {
 		return nil
 	}
 
-	this.SqldbPoolindex++
-	return this.SqldbPoolHandleFuncs[index]()
+	this.MakeDbPoolindex++
+	return this.MakeDbPoolHandleFuncs[index]()
 }
 
-func (this *PdoconfigMiddleware) Add_NewSqldb(middlewares ...Pdoconfig_NewSqldbHandleFunc) Pdoconfig_NewSqldbHandleFunc {
-	if this.NewSqldbHandleFuncs == nil {
-		this.NewSqldbHandleFuncs = make([]Pdoconfig_NewSqldbHandleFunc, 0)
+func (this *PdoconfigMiddleware) Add_MakeSqldb(middlewares ...Pdoconfig_MakeSqldbHandleFunc) Pdoconfig_MakeSqldbHandleFunc {
+    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, func() *Pdoconfig {
+        defer func(start time.Time) {
+            if this.Logger != nil {
+                tc := time.Since(start).String()
+                this.Logger.Println("耗时 - Pdoconfig.MakeSqldb",tc)
+            }
+        }(time.Now())
+        if this.Logger != nil {
+            this.Logger.Println("调起 - Pdoconfig.MakeSqldb，参数： ",)
+        }
+        return this.Next_MakeSqldb()
+    })
+
+    //
+	if this.MakeSqldbHandleFuncs == nil {
+		this.MakeSqldbHandleFuncs = make([]Pdoconfig_MakeSqldbHandleFunc, 0)
 	}
 	for _, mid := range middlewares {
-		this.NewSqldbHandleFuncs = append(this.NewSqldbHandleFuncs, mid)
+		this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, mid)
 	}
-	return this.Next_NewSqldb
+	return this.Next_MakeSqldb
 }
-func (this *PdoconfigMiddleware) Next_NewSqldb() *sql.DB {
-	index := this.NewSqldbindex
-	if this.NewSqldbindex >= len(this.NewSqldbHandleFuncs) {
+func (this *PdoconfigMiddleware) Next_MakeSqldb()*Pdoconfig{
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.MakeSqldbHandleFuncs) == 0 {
+		this.Add_MakeSqldb(this.Pdoconfig.MakeSqldb)
+	} else if this.MakeSqldbindex == 0 {
+		this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, this.Pdoconfig.MakeSqldb)
+	}
+    index := this.MakeSqldbindex
+	if this.MakeSqldbindex >= len(this.MakeSqldbHandleFuncs) {
 		return nil
 	}
 
-	this.NewSqldbindex++
-	return this.NewSqldbHandleFuncs[index]()
+	this.MakeSqldbindex++
+	return this.MakeSqldbHandleFuncs[index]()
 }
 
-func (this *PdoconfigMiddleware) Add_SqldbPoolFromBytes(middlewares ...Pdoconfig_SqldbPoolFromBytesHandleFunc) Pdoconfig_SqldbPoolFromBytesHandleFunc {
-	if this.SqldbPoolFromBytesHandleFuncs == nil {
-		this.SqldbPoolFromBytesHandleFuncs = make([]Pdoconfig_SqldbPoolFromBytesHandleFunc, 0)
+func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandleFunc) Pdoconfig_MakeTXHandleFunc {
+    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    this.MakeTXHandleFuncs = append(this.MakeTXHandleFuncs, func() *sql.Tx {
+        defer func(start time.Time) {
+            if this.Logger != nil {
+                tc := time.Since(start).String()
+                this.Logger.Println("耗时 - Pdoconfig.MakeTX",tc)
+            }
+        }(time.Now())
+        if this.Logger != nil {
+            this.Logger.Println("调起 - Pdoconfig.MakeTX，参数： ",)
+        }
+        return this.Next_MakeTX()
+    })
+
+    //
+	if this.MakeTXHandleFuncs == nil {
+		this.MakeTXHandleFuncs = make([]Pdoconfig_MakeTXHandleFunc, 0)
 	}
 	for _, mid := range middlewares {
-		this.SqldbPoolFromBytesHandleFuncs = append(this.SqldbPoolFromBytesHandleFuncs, mid)
+		this.MakeTXHandleFuncs = append(this.MakeTXHandleFuncs, mid)
 	}
-	return this.Next_SqldbPoolFromBytes
+	return this.Next_MakeTX
 }
-func (this *PdoconfigMiddleware) Next_SqldbPoolFromBytes(bytes []byte) *sql.DB {
-	index := this.SqldbPoolFromBytesindex
-	if this.SqldbPoolFromBytesindex >= len(this.SqldbPoolFromBytesHandleFuncs) {
+func (this *PdoconfigMiddleware) Next_MakeTX()*sql.Tx{
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.MakeTXHandleFuncs) == 0 {
+		this.Add_MakeTX(this.Pdoconfig.MakeTX)
+	} else if this.MakeTXindex == 0 {
+		this.MakeTXHandleFuncs = append(this.MakeTXHandleFuncs, this.Pdoconfig.MakeTX)
+	}
+    index := this.MakeTXindex
+	if this.MakeTXindex >= len(this.MakeTXHandleFuncs) {
 		return nil
 	}
 
-	this.SqldbPoolFromBytesindex++
-	return this.SqldbPoolFromBytesHandleFuncs[index](bytes)
+	this.MakeTXindex++
+	return this.MakeTXHandleFuncs[index]()
 }
 
-func (this *PdoconfigMiddleware) Add_NewTX(middlewares ...Pdoconfig_NewTXHandleFunc) Pdoconfig_NewTXHandleFunc {
-	if this.NewTXHandleFuncs == nil {
-		this.NewTXHandleFuncs = make([]Pdoconfig_NewTXHandleFunc, 0)
+func (this *PdoconfigMiddleware) Add_NewPdo(middlewares ...Pdoconfig_NewPdoHandleFunc) Pdoconfig_NewPdoHandleFunc {
+    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    this.NewPdoHandleFuncs = append(this.NewPdoHandleFuncs, func() *Pdo {
+        defer func(start time.Time) {
+            if this.Logger != nil {
+                tc := time.Since(start).String()
+                this.Logger.Println("耗时 - Pdoconfig.NewPdo",tc)
+            }
+        }(time.Now())
+        if this.Logger != nil {
+            this.Logger.Println("调起 - Pdoconfig.NewPdo，参数： ",)
+        }
+        return this.Next_NewPdo()
+    })
+
+    //
+	if this.NewPdoHandleFuncs == nil {
+		this.NewPdoHandleFuncs = make([]Pdoconfig_NewPdoHandleFunc, 0)
 	}
 	for _, mid := range middlewares {
-		this.NewTXHandleFuncs = append(this.NewTXHandleFuncs, mid)
+		this.NewPdoHandleFuncs = append(this.NewPdoHandleFuncs, mid)
 	}
-	return this.Next_NewTX
+	return this.Next_NewPdo
 }
-func (this *PdoconfigMiddleware) Next_NewTX() *sql.Tx {
-	index := this.NewTXindex
-	if this.NewTXindex >= len(this.NewTXHandleFuncs) {
+func (this *PdoconfigMiddleware) Next_NewPdo()*Pdo{
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.NewPdoHandleFuncs) == 0 {
+		this.Add_NewPdo(this.Pdoconfig.NewPdo)
+	} else if this.NewPdoindex == 0 {
+		this.NewPdoHandleFuncs = append(this.NewPdoHandleFuncs, this.Pdoconfig.NewPdo)
+	}
+    index := this.NewPdoindex
+	if this.NewPdoindex >= len(this.NewPdoHandleFuncs) {
 		return nil
 	}
 
-	this.NewTXindex++
-	return this.NewTXHandleFuncs[index]()
+	this.NewPdoindex++
+	return this.NewPdoHandleFuncs[index]()
 }
 
-// 检测接口是否被完整的实现了，如果没有实现，那么编译不通过
-var _ PdoconfigInterface = new(Pdoconfig)
+//检测接口是否被完整的实现了，如果没有实现，那么编译不通过
+var _ PdoconfigInterface =new(Pdoconfig)

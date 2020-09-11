@@ -25,9 +25,8 @@ func TestPdo_selectvarMiddle_271_0(t *testing.T) {
 }
 
 func (SelectvarMiddle_271_0) run(input, arg interface{}) interface{} {
-	pdoconfig := goorm.Pdoconfig{}
-	pdoconfig.SqldbPoolFromBytes(input.([]byte))
-	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
+	pdoconfig := goorm.NewPdoconfigFromBytes(input.([]byte))
+	pdo := pdoconfig.NewPdo()
 
 	logFile, err := os.OpenFile("darkhold_go.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {

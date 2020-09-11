@@ -29,10 +29,9 @@ func (Insert_251_0) run(input, arg interface{}) interface{} {
 	}()
 
 	// 配置还原成对象
-	var pdoconfig goorm.Pdoconfig
-	pdoconfig.SqldbPoolFromBytes(input.([]byte))
+	var pdoconfig *goorm.Pdoconfig = goorm.NewPdoconfigFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
+	pdo := pdoconfig.NewPdo()
 	defer pdo.Commit()
 	var arg2 = arg.(map[string]interface{})
 	num, _ := pdo.Insert(arg2["sql"].(string), arg2["binds"].([]interface{}))

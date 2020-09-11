@@ -24,10 +24,9 @@ func TestPdo_selectall_253_0(t *testing.T) {
 
 func (Selectall_253_0) run(input, arg interface{}) interface{} {
 	// 配置还原成对象
-	var pdoconfig goorm.Pdoconfig
-	pdoconfig.SqldbPoolFromBytes(input.([]byte))
+	var pdoconfig *goorm.Pdoconfig = goorm.NewPdoconfigFromBytes(input.([]byte))
 	// 生成链接对象
-	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
+	pdo := pdoconfig.NewPdo()
 	defer pdo.Commit()
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})

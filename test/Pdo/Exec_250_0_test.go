@@ -22,10 +22,7 @@ func TestPdo_Exec_250_0(t *testing.T) {
 
 func (Exec_250_0) run(input, arg interface{}) interface{} {
 	// 配置还原成对象
-	var pdoconfig goorm.Pdoconfig
-	pdoconfig.SqldbPoolFromBytes(input.([]byte))
-	// 生成链接对象
-	pdo := goorm.Pdo{TX: pdoconfig.NewTX()}
+	var pdo  = goorm.NewPdoconfigFromBytes(input.([]byte)).NewPdo()
 	defer pdo.Commit()
 	var arg2 = arg.(map[string]interface{})
 	exec, _ := pdo.Exec(arg2["sql"].(string), arg2["binds"].([]interface{}))
