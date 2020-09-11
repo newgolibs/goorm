@@ -56,6 +56,9 @@ type Pdoconfig struct
 
 
 
+func (this *Pdoconfig) NewPdoconfigMiddleware() *PdoconfigMiddleware{
+    return &PdoconfigMiddleware{Pdoconfig:this}
+}
 /**
 * 中间件的扩展类middleware
 */
