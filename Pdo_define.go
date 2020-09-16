@@ -1,9 +1,8 @@
 package goorm
-
 import (
-	"database/sql"
-	"log"
-	"time"
+        "database/sql"
+    "time"
+    "log"
 )
 
 //对象必须实现的接口方法
@@ -90,18 +89,20 @@ type PdoMiddleware struct{
 
 func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_InsertHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.InsertHandleFuncs = append(this.InsertHandleFuncs, func(sql string,bindarray []interface{}) (int64,error) {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.InsertHandleFuncs = append(this.InsertHandleFuncs, func(sql string,bindarray []interface{}) (int64,error) {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.Insert",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.Insert",tc)
+                this.Logger.Println("调起 - Pdo.Insert，参数： ",sql,bindarray)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.Insert，参数： ",sql,bindarray)
-        }
-        return this.Next_Insert(sql,bindarray)
-    })
+            return this.Next_CALL_Insert(sql,bindarray)
+        })
+    }
 
     //
 	if this.InsertHandleFuncs == nil {
@@ -110,9 +111,12 @@ func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_I
 	for _, mid := range middlewares {
 		this.InsertHandleFuncs = append(this.InsertHandleFuncs, mid)
 	}
-	return this.Next_Insert
+	return this.Next_CALL_Insert
 }
-func (this *PdoMiddleware) Next_Insert(sql string,bindarray []interface{})(int64,error){
+func (this *PdoMiddleware) Next_Insert(sql string,bindarray []interface{})Pdo_InsertHandleFunc {
+    this.Insertindex = 0;
+    return this.Next_CALL_Insert}
+func (this *PdoMiddleware) Next_CALL_Insert(sql string,bindarray []interface{})(int64,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.InsertHandleFuncs) == 0 {
 		this.Add_Insert(this.Pdo.Insert)
@@ -130,18 +134,20 @@ func (this *PdoMiddleware) Next_Insert(sql string,bindarray []interface{})(int64
 
 func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.ExecHandleFuncs = append(this.ExecHandleFuncs, func(sql string,bindarray []interface{}) (int64,error) {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.ExecHandleFuncs = append(this.ExecHandleFuncs, func(sql string,bindarray []interface{}) (int64,error) {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.Exec",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.Exec",tc)
+                this.Logger.Println("调起 - Pdo.Exec，参数： ",sql,bindarray)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.Exec，参数： ",sql,bindarray)
-        }
-        return this.Next_Exec(sql,bindarray)
-    })
+            return this.Next_CALL_Exec(sql,bindarray)
+        })
+    }
 
     //
 	if this.ExecHandleFuncs == nil {
@@ -150,9 +156,12 @@ func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecH
 	for _, mid := range middlewares {
 		this.ExecHandleFuncs = append(this.ExecHandleFuncs, mid)
 	}
-	return this.Next_Exec
+	return this.Next_CALL_Exec
 }
-func (this *PdoMiddleware) Next_Exec(sql string,bindarray []interface{})(int64,error){
+func (this *PdoMiddleware) Next_Exec(sql string,bindarray []interface{})Pdo_ExecHandleFunc {
+    this.Execindex = 0;
+    return this.Next_CALL_Exec}
+func (this *PdoMiddleware) Next_CALL_Exec(sql string,bindarray []interface{})(int64,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.ExecHandleFuncs) == 0 {
 		this.Add_Exec(this.Pdo.Exec)
@@ -170,18 +179,20 @@ func (this *PdoMiddleware) Next_Exec(sql string,bindarray []interface{})(int64,e
 
 func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc) Pdo_SelectOneHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.SelectOneHandleFuncs = append(this.SelectOneHandleFuncs, func(sql string,bindarray []interface{}) (map[string]string,error) {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.SelectOneHandleFuncs = append(this.SelectOneHandleFuncs, func(sql string,bindarray []interface{}) (map[string]string,error) {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.SelectOne",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.SelectOne",tc)
+                this.Logger.Println("调起 - Pdo.SelectOne，参数： ",sql,bindarray)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.SelectOne，参数： ",sql,bindarray)
-        }
-        return this.Next_SelectOne(sql,bindarray)
-    })
+            return this.Next_CALL_SelectOne(sql,bindarray)
+        })
+    }
 
     //
 	if this.SelectOneHandleFuncs == nil {
@@ -190,9 +201,12 @@ func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc)
 	for _, mid := range middlewares {
 		this.SelectOneHandleFuncs = append(this.SelectOneHandleFuncs, mid)
 	}
-	return this.Next_SelectOne
+	return this.Next_CALL_SelectOne
 }
-func (this *PdoMiddleware) Next_SelectOne(sql string,bindarray []interface{})(map[string]string,error){
+func (this *PdoMiddleware) Next_SelectOne(sql string,bindarray []interface{})Pdo_SelectOneHandleFunc {
+    this.SelectOneindex = 0;
+    return this.Next_CALL_SelectOne}
+func (this *PdoMiddleware) Next_CALL_SelectOne(sql string,bindarray []interface{})(map[string]string,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectOneHandleFuncs) == 0 {
 		this.Add_SelectOne(this.Pdo.SelectOne)
@@ -210,18 +224,20 @@ func (this *PdoMiddleware) Next_SelectOne(sql string,bindarray []interface{})(ma
 
 func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjectHandleFunc) Pdo_SelectOneObjectHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.SelectOneObjectHandleFuncs = append(this.SelectOneObjectHandleFuncs, func(sql string,bindarray []interface{},orm_ptr interface{}) error {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.SelectOneObjectHandleFuncs = append(this.SelectOneObjectHandleFuncs, func(sql string,bindarray []interface{},orm_ptr interface{}) error {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.SelectOneObject",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.SelectOneObject",tc)
+                this.Logger.Println("调起 - Pdo.SelectOneObject，参数： ",sql,bindarray,orm_ptr)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.SelectOneObject，参数： ",sql,bindarray,orm_ptr)
-        }
-        return this.Next_SelectOneObject(sql,bindarray,orm_ptr)
-    })
+            return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
+        })
+    }
 
     //
 	if this.SelectOneObjectHandleFuncs == nil {
@@ -230,9 +246,12 @@ func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjec
 	for _, mid := range middlewares {
 		this.SelectOneObjectHandleFuncs = append(this.SelectOneObjectHandleFuncs, mid)
 	}
-	return this.Next_SelectOneObject
+	return this.Next_CALL_SelectOneObject
 }
-func (this *PdoMiddleware) Next_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error{
+func (this *PdoMiddleware) Next_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})Pdo_SelectOneObjectHandleFunc {
+    this.SelectOneObjectindex = 0;
+    return this.Next_CALL_SelectOneObject}
+func (this *PdoMiddleware) Next_CALL_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectOneObjectHandleFuncs) == 0 {
 		this.Add_SelectOneObject(this.Pdo.SelectOneObject)
@@ -250,18 +269,20 @@ func (this *PdoMiddleware) Next_SelectOneObject(sql string,bindarray []interface
 
 func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc) Pdo_SelectAllHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.SelectAllHandleFuncs = append(this.SelectAllHandleFuncs, func(sql string,bindarray []interface{}) ([]map[string]string,error) {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.SelectAllHandleFuncs = append(this.SelectAllHandleFuncs, func(sql string,bindarray []interface{}) ([]map[string]string,error) {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.SelectAll",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.SelectAll",tc)
+                this.Logger.Println("调起 - Pdo.SelectAll，参数： ",sql,bindarray)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.SelectAll，参数： ",sql,bindarray)
-        }
-        return this.Next_SelectAll(sql,bindarray)
-    })
+            return this.Next_CALL_SelectAll(sql,bindarray)
+        })
+    }
 
     //
 	if this.SelectAllHandleFuncs == nil {
@@ -270,9 +291,12 @@ func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc)
 	for _, mid := range middlewares {
 		this.SelectAllHandleFuncs = append(this.SelectAllHandleFuncs, mid)
 	}
-	return this.Next_SelectAll
+	return this.Next_CALL_SelectAll
 }
-func (this *PdoMiddleware) Next_SelectAll(sql string,bindarray []interface{})([]map[string]string,error){
+func (this *PdoMiddleware) Next_SelectAll(sql string,bindarray []interface{})Pdo_SelectAllHandleFunc {
+    this.SelectAllindex = 0;
+    return this.Next_CALL_SelectAll}
+func (this *PdoMiddleware) Next_CALL_SelectAll(sql string,bindarray []interface{})([]map[string]string,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectAllHandleFuncs) == 0 {
 		this.Add_SelectAll(this.Pdo.SelectAll)
@@ -290,18 +314,20 @@ func (this *PdoMiddleware) Next_SelectAll(sql string,bindarray []interface{})([]
 
 func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjectHandleFunc) Pdo_SelectallObjectHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.SelectallObjectHandleFuncs = append(this.SelectallObjectHandleFuncs, func(sql string,bindarray []interface{},orm_ptr interface{}) error {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.SelectallObjectHandleFuncs = append(this.SelectallObjectHandleFuncs, func(sql string,bindarray []interface{},orm_ptr interface{}) error {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.SelectallObject",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.SelectallObject",tc)
+                this.Logger.Println("调起 - Pdo.SelectallObject，参数： ",sql,bindarray,orm_ptr)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.SelectallObject，参数： ",sql,bindarray,orm_ptr)
-        }
-        return this.Next_SelectallObject(sql,bindarray,orm_ptr)
-    })
+            return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
+        })
+    }
 
     //
 	if this.SelectallObjectHandleFuncs == nil {
@@ -310,9 +336,12 @@ func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjec
 	for _, mid := range middlewares {
 		this.SelectallObjectHandleFuncs = append(this.SelectallObjectHandleFuncs, mid)
 	}
-	return this.Next_SelectallObject
+	return this.Next_CALL_SelectallObject
 }
-func (this *PdoMiddleware) Next_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error{
+func (this *PdoMiddleware) Next_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})Pdo_SelectallObjectHandleFunc {
+    this.SelectallObjectindex = 0;
+    return this.Next_CALL_SelectallObject}
+func (this *PdoMiddleware) Next_CALL_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectallObjectHandleFuncs) == 0 {
 		this.Add_SelectallObject(this.Pdo.SelectallObject)
@@ -330,18 +359,20 @@ func (this *PdoMiddleware) Next_SelectallObject(sql string,bindarray []interface
 
 func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_CommitHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.CommitHandleFuncs = append(this.CommitHandleFuncs, func() error {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.CommitHandleFuncs = append(this.CommitHandleFuncs, func() error {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.Commit",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.Commit",tc)
+                this.Logger.Println("调起 - Pdo.Commit，参数： ",)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.Commit，参数： ",)
-        }
-        return this.Next_Commit()
-    })
+            return this.Next_CALL_Commit()
+        })
+    }
 
     //
 	if this.CommitHandleFuncs == nil {
@@ -350,9 +381,12 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
 	for _, mid := range middlewares {
 		this.CommitHandleFuncs = append(this.CommitHandleFuncs, mid)
 	}
-	return this.Next_Commit
+	return this.Next_CALL_Commit
 }
-func (this *PdoMiddleware) Next_Commit()error{
+func (this *PdoMiddleware) Next_Commit()Pdo_CommitHandleFunc {
+    this.Commitindex = 0;
+    return this.Next_CALL_Commit}
+func (this *PdoMiddleware) Next_CALL_Commit()error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.CommitHandleFuncs) == 0 {
 		this.Add_Commit(this.Pdo.Commit)
@@ -370,18 +404,20 @@ func (this *PdoMiddleware) Next_Commit()error{
 
 func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) Pdo_RollbackHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, func() error {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, func() error {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.Rollback",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.Rollback",tc)
+                this.Logger.Println("调起 - Pdo.Rollback，参数： ",)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.Rollback，参数： ",)
-        }
-        return this.Next_Rollback()
-    })
+            return this.Next_CALL_Rollback()
+        })
+    }
 
     //
 	if this.RollbackHandleFuncs == nil {
@@ -390,9 +426,12 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
 	for _, mid := range middlewares {
 		this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, mid)
 	}
-	return this.Next_Rollback
+	return this.Next_CALL_Rollback
 }
-func (this *PdoMiddleware) Next_Rollback()error{
+func (this *PdoMiddleware) Next_Rollback()Pdo_RollbackHandleFunc {
+    this.Rollbackindex = 0;
+    return this.Next_CALL_Rollback}
+func (this *PdoMiddleware) Next_CALL_Rollback()error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.RollbackHandleFuncs) == 0 {
 		this.Add_Rollback(this.Pdo.Rollback)
@@ -410,18 +449,20 @@ func (this *PdoMiddleware) Next_Rollback()error{
 
 func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc) Pdo_SelectVarHandleFunc {
     //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    this.SelectVarHandleFuncs = append(this.SelectVarHandleFuncs, func(sql string,bindarray []interface{}) (string,error) {
-        defer func(start time.Time) {
+    if this.ExecHandleFuncs ==nil{
+        this.SelectVarHandleFuncs = append(this.SelectVarHandleFuncs, func(sql string,bindarray []interface{}) (string,error) {
+            defer func(start time.Time) {
+                if this.Logger != nil {
+                    tc := time.Since(start).String()
+                    this.Logger.Println("耗时 - Pdo.SelectVar",tc)
+                }
+            }(time.Now())
             if this.Logger != nil {
-                tc := time.Since(start).String()
-                this.Logger.Println("耗时 - Pdo.SelectVar",tc)
+                this.Logger.Println("调起 - Pdo.SelectVar，参数： ",sql,bindarray)
             }
-        }(time.Now())
-        if this.Logger != nil {
-            this.Logger.Println("调起 - Pdo.SelectVar，参数： ",sql,bindarray)
-        }
-        return this.Next_SelectVar(sql,bindarray)
-    })
+            return this.Next_CALL_SelectVar(sql,bindarray)
+        })
+    }
 
     //
 	if this.SelectVarHandleFuncs == nil {
@@ -430,9 +471,12 @@ func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc)
 	for _, mid := range middlewares {
 		this.SelectVarHandleFuncs = append(this.SelectVarHandleFuncs, mid)
 	}
-	return this.Next_SelectVar
+	return this.Next_CALL_SelectVar
 }
-func (this *PdoMiddleware) Next_SelectVar(sql string,bindarray []interface{})(string,error){
+func (this *PdoMiddleware) Next_SelectVar(sql string,bindarray []interface{})Pdo_SelectVarHandleFunc {
+    this.SelectVarindex = 0;
+    return this.Next_CALL_SelectVar}
+func (this *PdoMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{})(string,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectVarHandleFuncs) == 0 {
 		this.Add_SelectVar(this.Pdo.SelectVar)
