@@ -113,9 +113,10 @@ func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_I
 	}
 	return this.Next_CALL_Insert
 }
-func (this *PdoMiddleware) Next_Insert(sql string,bindarray []interface{})Pdo_InsertHandleFunc {
+func (this *PdoMiddleware) Next_Insert(sql string,bindarray []interface{})(int64,error) {
     this.Insertindex = 0;
-    return this.Next_CALL_Insert}
+    return this.Next_CALL_Insert(sql,bindarray)
+}
 func (this *PdoMiddleware) Next_CALL_Insert(sql string,bindarray []interface{})(int64,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.InsertHandleFuncs) == 0 {
@@ -158,9 +159,10 @@ func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecH
 	}
 	return this.Next_CALL_Exec
 }
-func (this *PdoMiddleware) Next_Exec(sql string,bindarray []interface{})Pdo_ExecHandleFunc {
+func (this *PdoMiddleware) Next_Exec(sql string,bindarray []interface{})(int64,error) {
     this.Execindex = 0;
-    return this.Next_CALL_Exec}
+    return this.Next_CALL_Exec(sql,bindarray)
+}
 func (this *PdoMiddleware) Next_CALL_Exec(sql string,bindarray []interface{})(int64,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.ExecHandleFuncs) == 0 {
@@ -203,9 +205,10 @@ func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc)
 	}
 	return this.Next_CALL_SelectOne
 }
-func (this *PdoMiddleware) Next_SelectOne(sql string,bindarray []interface{})Pdo_SelectOneHandleFunc {
+func (this *PdoMiddleware) Next_SelectOne(sql string,bindarray []interface{})(map[string]string,error) {
     this.SelectOneindex = 0;
-    return this.Next_CALL_SelectOne}
+    return this.Next_CALL_SelectOne(sql,bindarray)
+}
 func (this *PdoMiddleware) Next_CALL_SelectOne(sql string,bindarray []interface{})(map[string]string,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectOneHandleFuncs) == 0 {
@@ -248,9 +251,10 @@ func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjec
 	}
 	return this.Next_CALL_SelectOneObject
 }
-func (this *PdoMiddleware) Next_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})Pdo_SelectOneObjectHandleFunc {
+func (this *PdoMiddleware) Next_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error {
     this.SelectOneObjectindex = 0;
-    return this.Next_CALL_SelectOneObject}
+    return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
+}
 func (this *PdoMiddleware) Next_CALL_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectOneObjectHandleFuncs) == 0 {
@@ -293,9 +297,10 @@ func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc)
 	}
 	return this.Next_CALL_SelectAll
 }
-func (this *PdoMiddleware) Next_SelectAll(sql string,bindarray []interface{})Pdo_SelectAllHandleFunc {
+func (this *PdoMiddleware) Next_SelectAll(sql string,bindarray []interface{})([]map[string]string,error) {
     this.SelectAllindex = 0;
-    return this.Next_CALL_SelectAll}
+    return this.Next_CALL_SelectAll(sql,bindarray)
+}
 func (this *PdoMiddleware) Next_CALL_SelectAll(sql string,bindarray []interface{})([]map[string]string,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectAllHandleFuncs) == 0 {
@@ -338,9 +343,10 @@ func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjec
 	}
 	return this.Next_CALL_SelectallObject
 }
-func (this *PdoMiddleware) Next_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})Pdo_SelectallObjectHandleFunc {
+func (this *PdoMiddleware) Next_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error {
     this.SelectallObjectindex = 0;
-    return this.Next_CALL_SelectallObject}
+    return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
+}
 func (this *PdoMiddleware) Next_CALL_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectallObjectHandleFuncs) == 0 {
@@ -383,9 +389,10 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
 	}
 	return this.Next_CALL_Commit
 }
-func (this *PdoMiddleware) Next_Commit()Pdo_CommitHandleFunc {
+func (this *PdoMiddleware) Next_Commit()error {
     this.Commitindex = 0;
-    return this.Next_CALL_Commit}
+    return this.Next_CALL_Commit()
+}
 func (this *PdoMiddleware) Next_CALL_Commit()error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.CommitHandleFuncs) == 0 {
@@ -428,9 +435,10 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
 	}
 	return this.Next_CALL_Rollback
 }
-func (this *PdoMiddleware) Next_Rollback()Pdo_RollbackHandleFunc {
+func (this *PdoMiddleware) Next_Rollback()error {
     this.Rollbackindex = 0;
-    return this.Next_CALL_Rollback}
+    return this.Next_CALL_Rollback()
+}
 func (this *PdoMiddleware) Next_CALL_Rollback()error{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.RollbackHandleFuncs) == 0 {
@@ -473,9 +481,10 @@ func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc)
 	}
 	return this.Next_CALL_SelectVar
 }
-func (this *PdoMiddleware) Next_SelectVar(sql string,bindarray []interface{})Pdo_SelectVarHandleFunc {
+func (this *PdoMiddleware) Next_SelectVar(sql string,bindarray []interface{})(string,error) {
     this.SelectVarindex = 0;
-    return this.Next_CALL_SelectVar}
+    return this.Next_CALL_SelectVar(sql,bindarray)
+}
 func (this *PdoMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{})(string,error){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SelectVarHandleFuncs) == 0 {
