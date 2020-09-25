@@ -7,30 +7,33 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strconv"
 )
 
 /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
-func (this *Pdo) Rollback() error {
+func (this *Pdo) Rollback() {
 	var err error
 	err = this.TX.Rollback()
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
-		fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
+		fmt.Printf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
 	}
-	return err
 }
 
 /**
 提交事务
 */
-func (this *Pdo) Commit() error {
+func (this *Pdo) Commit(recover interface{}) {
 	var err error
-	err = this.TX.Commit()
-	if err != nil {
-		_, file, line, _ := runtime.Caller(0)
-		fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
+	if recover != nil { // 👈👈---- 发现有错误了
+		this.Rollback()
+	} else { // 👈👈----  没有错误，提交
+		err = this.TX.Commit()
+		if err != nil {
+			_, file, line, _ := runtime.Caller(0)
+			fmt.Printf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
+		}
 	}
-	return err
 }
 
 /**    执行Query方法，返回rows    */
@@ -38,7 +41,7 @@ func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []
 	rows, err := this.TX.Query(sqlstring, bindarray...)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
-		fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
+		fmt.Printf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
 		return nil, nil, nil, nil, err
 	}
 
@@ -154,17 +157,13 @@ func (this *Pdo) pdoexec(sql string, bindarray []interface{}) (sql.Result, error
 	stmt, err := this.TX.Prepare(sql)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
-		fmt.Sprintf("\033[41;36merr:%+v %+v:%+v \033[0m\n", []interface{}{err}, file, line)
-		this.Rollback()
-		return nil, err
+		panic(err.Error() + "@file: " + file + ":" + strconv.Itoa(line+1))
 	}
 	defer stmt.Close() // Prepared statements take up server resources and should be closed after use.
 	Result, err := stmt.Exec(bindarray...)
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
-		fmt.Sprintf("\033[41;36merr:%+v %+v:%+v \033[0m\n", []interface{}{err}, file, line)
-		this.Rollback()
-		return nil, err
+		panic(err.Error() + "@file: " + file + ":" + strconv.Itoa(line+1))
 	}
 	return Result, nil
 }

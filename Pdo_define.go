@@ -22,11 +22,11 @@ type PdoInterface interface {
     /**    查询多行数据，返回struct对象的数组    */
     SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error
     /**    提交事务    */
-    Commit()error
+    Commit(recover interface{})
     /**    执行Query方法，返回rows    */
     query(sql string,bindarray []interface{})(*sql.Rows,[]interface{},[]sql.RawBytes,[]string,error)
     /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
-    Rollback()error
+    Rollback()
     /**    查询count    */
     SelectVar(sql string,bindarray []interface{})(string,error)
 
@@ -39,8 +39,8 @@ type Pdo_SelectOneHandleFunc func(sql string,bindarray []interface{})(map[string
 type Pdo_SelectOneObjectHandleFunc func(sql string,bindarray []interface{},orm_ptr interface{})error
 type Pdo_SelectAllHandleFunc func(sql string,bindarray []interface{})([]map[string]string,error)
 type Pdo_SelectallObjectHandleFunc func(sql string,bindarray []interface{},orm_ptr interface{})error
-type Pdo_CommitHandleFunc func()error
-type Pdo_RollbackHandleFunc func()error
+type Pdo_CommitHandleFunc func(recover interface{})
+type Pdo_RollbackHandleFunc func()
 type Pdo_SelectVarHandleFunc func(sql string,bindarray []interface{})(string,error)
 
 /**
@@ -88,7 +88,7 @@ type PdoMiddleware struct{
 
 
 func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_InsertHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.InsertHandleFuncs) == 0 {
         this.InsertHandleFuncs = append(this.InsertHandleFuncs, func(sql string,bindarray []interface{}) (int64,error) {
             defer func(start time.Time) {
@@ -114,7 +114,7 @@ func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_I
 	return this.Next_CALL_Insert
 }
 func (this *PdoMiddleware) Next_Insert(sql string,bindarray []interface{})(int64,error) {
-    this.Insertindex = 0;
+    this.Insertindex = 0
     return this.Next_CALL_Insert(sql,bindarray)
 }
 func (this *PdoMiddleware) Next_CALL_Insert(sql string,bindarray []interface{})(int64,error){
@@ -126,15 +126,14 @@ func (this *PdoMiddleware) Next_CALL_Insert(sql string,bindarray []interface{})(
 	}
     index := this.Insertindex
 	if this.Insertindex >= len(this.InsertHandleFuncs) {
-		return 0,nil
-	}
+		return 0,nil	}
 
 	this.Insertindex++
 	return this.InsertHandleFuncs[index](sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.ExecHandleFuncs) == 0 {
         this.ExecHandleFuncs = append(this.ExecHandleFuncs, func(sql string,bindarray []interface{}) (int64,error) {
             defer func(start time.Time) {
@@ -160,7 +159,7 @@ func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecH
 	return this.Next_CALL_Exec
 }
 func (this *PdoMiddleware) Next_Exec(sql string,bindarray []interface{})(int64,error) {
-    this.Execindex = 0;
+    this.Execindex = 0
     return this.Next_CALL_Exec(sql,bindarray)
 }
 func (this *PdoMiddleware) Next_CALL_Exec(sql string,bindarray []interface{})(int64,error){
@@ -172,15 +171,14 @@ func (this *PdoMiddleware) Next_CALL_Exec(sql string,bindarray []interface{})(in
 	}
     index := this.Execindex
 	if this.Execindex >= len(this.ExecHandleFuncs) {
-		return 0,nil
-	}
+		return 0,nil	}
 
 	this.Execindex++
 	return this.ExecHandleFuncs[index](sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc) Pdo_SelectOneHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.SelectOneHandleFuncs) == 0 {
         this.SelectOneHandleFuncs = append(this.SelectOneHandleFuncs, func(sql string,bindarray []interface{}) (map[string]string,error) {
             defer func(start time.Time) {
@@ -206,7 +204,7 @@ func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc)
 	return this.Next_CALL_SelectOne
 }
 func (this *PdoMiddleware) Next_SelectOne(sql string,bindarray []interface{})(map[string]string,error) {
-    this.SelectOneindex = 0;
+    this.SelectOneindex = 0
     return this.Next_CALL_SelectOne(sql,bindarray)
 }
 func (this *PdoMiddleware) Next_CALL_SelectOne(sql string,bindarray []interface{})(map[string]string,error){
@@ -218,15 +216,14 @@ func (this *PdoMiddleware) Next_CALL_SelectOne(sql string,bindarray []interface{
 	}
     index := this.SelectOneindex
 	if this.SelectOneindex >= len(this.SelectOneHandleFuncs) {
-		return nil,nil
-	}
+		return nil,nil	}
 
 	this.SelectOneindex++
 	return this.SelectOneHandleFuncs[index](sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjectHandleFunc) Pdo_SelectOneObjectHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.SelectOneObjectHandleFuncs) == 0 {
         this.SelectOneObjectHandleFuncs = append(this.SelectOneObjectHandleFuncs, func(sql string,bindarray []interface{},orm_ptr interface{}) error {
             defer func(start time.Time) {
@@ -252,7 +249,7 @@ func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjec
 	return this.Next_CALL_SelectOneObject
 }
 func (this *PdoMiddleware) Next_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error {
-    this.SelectOneObjectindex = 0;
+    this.SelectOneObjectindex = 0
     return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
 }
 func (this *PdoMiddleware) Next_CALL_SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error{
@@ -264,15 +261,14 @@ func (this *PdoMiddleware) Next_CALL_SelectOneObject(sql string,bindarray []inte
 	}
     index := this.SelectOneObjectindex
 	if this.SelectOneObjectindex >= len(this.SelectOneObjectHandleFuncs) {
-		return nil
-	}
+		return nil	}
 
 	this.SelectOneObjectindex++
 	return this.SelectOneObjectHandleFuncs[index](sql,bindarray,orm_ptr)
 }
 
 func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc) Pdo_SelectAllHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.SelectAllHandleFuncs) == 0 {
         this.SelectAllHandleFuncs = append(this.SelectAllHandleFuncs, func(sql string,bindarray []interface{}) ([]map[string]string,error) {
             defer func(start time.Time) {
@@ -298,7 +294,7 @@ func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc)
 	return this.Next_CALL_SelectAll
 }
 func (this *PdoMiddleware) Next_SelectAll(sql string,bindarray []interface{})([]map[string]string,error) {
-    this.SelectAllindex = 0;
+    this.SelectAllindex = 0
     return this.Next_CALL_SelectAll(sql,bindarray)
 }
 func (this *PdoMiddleware) Next_CALL_SelectAll(sql string,bindarray []interface{})([]map[string]string,error){
@@ -310,15 +306,14 @@ func (this *PdoMiddleware) Next_CALL_SelectAll(sql string,bindarray []interface{
 	}
     index := this.SelectAllindex
 	if this.SelectAllindex >= len(this.SelectAllHandleFuncs) {
-		return nil,nil
-	}
+		return nil,nil	}
 
 	this.SelectAllindex++
 	return this.SelectAllHandleFuncs[index](sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjectHandleFunc) Pdo_SelectallObjectHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.SelectallObjectHandleFuncs) == 0 {
         this.SelectallObjectHandleFuncs = append(this.SelectallObjectHandleFuncs, func(sql string,bindarray []interface{},orm_ptr interface{}) error {
             defer func(start time.Time) {
@@ -344,7 +339,7 @@ func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjec
 	return this.Next_CALL_SelectallObject
 }
 func (this *PdoMiddleware) Next_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error {
-    this.SelectallObjectindex = 0;
+    this.SelectallObjectindex = 0
     return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
 }
 func (this *PdoMiddleware) Next_CALL_SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error{
@@ -356,17 +351,16 @@ func (this *PdoMiddleware) Next_CALL_SelectallObject(sql string,bindarray []inte
 	}
     index := this.SelectallObjectindex
 	if this.SelectallObjectindex >= len(this.SelectallObjectHandleFuncs) {
-		return nil
-	}
+		return nil	}
 
 	this.SelectallObjectindex++
 	return this.SelectallObjectHandleFuncs[index](sql,bindarray,orm_ptr)
 }
 
 func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_CommitHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.CommitHandleFuncs) == 0 {
-        this.CommitHandleFuncs = append(this.CommitHandleFuncs, func() error {
+        this.CommitHandleFuncs = append(this.CommitHandleFuncs, func(recover interface{})  {
             defer func(start time.Time) {
                 if this.Logger != nil {
                     tc := time.Since(start).String()
@@ -374,9 +368,9 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
                 }
             }(time.Now())
             if this.Logger != nil {
-                this.Logger.Println("调起 - Pdo.Commit，参数： ",)
+                this.Logger.Println("调起 - Pdo.Commit，参数： ",recover)
             }
-            return this.Next_CALL_Commit()
+            this.Next_CALL_Commit(recover)
         })
     }
 
@@ -389,11 +383,11 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
 	}
 	return this.Next_CALL_Commit
 }
-func (this *PdoMiddleware) Next_Commit()error {
-    this.Commitindex = 0;
-    return this.Next_CALL_Commit()
+func (this *PdoMiddleware) Next_Commit(recover interface{}) {
+    this.Commitindex = 0
+    this.Next_CALL_Commit(recover)
 }
-func (this *PdoMiddleware) Next_CALL_Commit()error{
+func (this *PdoMiddleware) Next_CALL_Commit(recover interface{}){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.CommitHandleFuncs) == 0 {
 		this.Add_Commit(this.Pdo.Commit)
@@ -402,17 +396,17 @@ func (this *PdoMiddleware) Next_CALL_Commit()error{
 	}
     index := this.Commitindex
 	if this.Commitindex >= len(this.CommitHandleFuncs) {
-		return nil
+        return
 	}
 
 	this.Commitindex++
-	return this.CommitHandleFuncs[index]()
+    this.CommitHandleFuncs[index](recover)
 }
 
 func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) Pdo_RollbackHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.RollbackHandleFuncs) == 0 {
-        this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, func() error {
+        this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, func()  {
             defer func(start time.Time) {
                 if this.Logger != nil {
                     tc := time.Since(start).String()
@@ -422,7 +416,7 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
             if this.Logger != nil {
                 this.Logger.Println("调起 - Pdo.Rollback，参数： ",)
             }
-            return this.Next_CALL_Rollback()
+            this.Next_CALL_Rollback()
         })
     }
 
@@ -435,11 +429,11 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
 	}
 	return this.Next_CALL_Rollback
 }
-func (this *PdoMiddleware) Next_Rollback()error {
-    this.Rollbackindex = 0;
-    return this.Next_CALL_Rollback()
+func (this *PdoMiddleware) Next_Rollback() {
+    this.Rollbackindex = 0
+    this.Next_CALL_Rollback()
 }
-func (this *PdoMiddleware) Next_CALL_Rollback()error{
+func (this *PdoMiddleware) Next_CALL_Rollback(){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.RollbackHandleFuncs) == 0 {
 		this.Add_Rollback(this.Pdo.Rollback)
@@ -448,15 +442,15 @@ func (this *PdoMiddleware) Next_CALL_Rollback()error{
 	}
     index := this.Rollbackindex
 	if this.Rollbackindex >= len(this.RollbackHandleFuncs) {
-		return nil
+        return
 	}
 
 	this.Rollbackindex++
-	return this.RollbackHandleFuncs[index]()
+    this.RollbackHandleFuncs[index]()
 }
 
 func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc) Pdo_SelectVarHandleFunc {
-    //第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.SelectVarHandleFuncs) == 0 {
         this.SelectVarHandleFuncs = append(this.SelectVarHandleFuncs, func(sql string,bindarray []interface{}) (string,error) {
             defer func(start time.Time) {
@@ -482,7 +476,7 @@ func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc)
 	return this.Next_CALL_SelectVar
 }
 func (this *PdoMiddleware) Next_SelectVar(sql string,bindarray []interface{})(string,error) {
-    this.SelectVarindex = 0;
+    this.SelectVarindex = 0
     return this.Next_CALL_SelectVar(sql,bindarray)
 }
 func (this *PdoMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{})(string,error){
@@ -494,8 +488,7 @@ func (this *PdoMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{
 	}
     index := this.SelectVarindex
 	if this.SelectVarindex >= len(this.SelectVarHandleFuncs) {
-		return "",nil
-	}
+		return "",nil	}
 
 	this.SelectVarindex++
 	return this.SelectVarHandleFuncs[index](sql,bindarray)
