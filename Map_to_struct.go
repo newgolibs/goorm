@@ -5,6 +5,9 @@ import (
 	"strconv"
 )
 
+/**
+把map一维数组，对应给结构体。根据结构体的字段注释 `db:"name"`
+ */
 func Map_to_struct(data map[string]string, struct_ptr interface{}) {
 	TypeOfthis := reflect.TypeOf(struct_ptr).Elem()
 	ValueOfthis_Elem := reflect.ValueOf(struct_ptr).Elem() // 为了改变对象的内部值，需使用引用
