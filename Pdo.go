@@ -40,8 +40,6 @@ func (this *Pdo) Commit(recover interface{}) {
 func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []interface{}, []sql.RawBytes, []string, error) {
 	rows, err := this.TX.Query(sqlstring, bindarray...)
 	if err != nil {
-		_, file, line, _ := runtime.Caller(0)
-		fmt.Printf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
 		return nil, nil, nil, nil, err
 	}
 

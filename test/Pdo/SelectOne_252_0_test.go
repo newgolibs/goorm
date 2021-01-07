@@ -27,13 +27,15 @@ func (SelectOne_252_0) run(input, arg interface{}) interface{} {
 	var pdoconfig *goorm.Pdoconfig = goorm.NewPdoconfigFromBytes(input.([]byte))
 	// 生成链接对象
 	pdo := pdoconfig.NewPdo()
-	defer pdo.Commit()
+	defer pdo.Commit(recover())
 
 	db := pdoconfig.Sqldb
 	fmt.Printf("%+v\n", []interface{}{"pdoconfig.SqldbPool()", pdoconfig.Sqldb, db.Stats()})
 
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})
+	log.Printf("测试sql：%+v，测试参数:%+v",arg2["sql"].(string),arg2["binds"].([]interface{}))
+
 	v, _ := pdo.SelectOne(arg2["sql"].(string), arg2["binds"].([]interface{}))
 	marshal, _ := json.Marshal(v)
 

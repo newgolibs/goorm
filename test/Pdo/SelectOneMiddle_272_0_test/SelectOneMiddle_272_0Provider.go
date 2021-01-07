@@ -1,6 +1,6 @@
-package SelectOne_252_0_test
+package SelectOneMiddle_272_0_test
 
-type  SelectOne_252_0_testProvider struct {
+type  SelectOneMiddle_272_0_testProvider struct {
 
 }
 
@@ -17,17 +17,7 @@ func  DataProvider() []interface{} {
             //执行测试，附加参数
             map[string]interface{}{"sql":"select id,a1,dd from  a where id=?","binds":[]interface{}{1}},
             //测试案例-唯一id
-            " - id=106",
-        },
-        []interface{}{
-            //输入
-            []byte(`{"Tns":"172.30.0.6","User":"darkhold","Password":"6532b3c13C1491FB","Port":3306,"DB":"allinone"}`),
-            // 预期结论
-            "{}",
-            //执行测试，附加参数
-            map[string]interface{}{"sql":"select id,a1,dd from  a where id=?","binds":[]interface{}{0}},
-            //测试案例-唯一id
-            " - id=110",
+            " - id=139",
         },
 	}
 

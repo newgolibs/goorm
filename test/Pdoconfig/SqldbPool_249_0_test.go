@@ -1,7 +1,6 @@
 package Pdoconfig
 
 import (
-	"fmt"
 	"github.com/newgolibs/goorm"
 	"github.com/newgolibs/goorm/test/Pdoconfig/SqldbPool_249_0_test"
 	"github.com/newgolibs/gostring"
@@ -24,14 +23,14 @@ func TestPdoconfig_SqldbPool_249_0(t *testing.T) {
 }
 
 func (SqldbPool_249_0) run(input, arg interface{}) interface{} {
-	a := goorm.Pdoconfig{}
-	a.SqldbPoolFromBytes(input.([]byte))
-	fmt.Printf("%+v\n", []interface{}{a.LinkString(), a.SqldbPool(),
-		gostring.JsonMarshalIndent(a.SqldbPool().Stats())})
+	pdoconfig_a := &goorm.Pdoconfig{}
+	pdoconfig_a = goorm.NewPdoconfigFromBytes(input.([]byte))
+	pdoconfig_a.MakeDbPool()
+	log.Printf("%+v\n", []interface{}{
+		pdoconfig_a.LinkString(),
+		pdoconfig_a.Sqldb,
+		gostring.JsonMarshalIndent(pdoconfig_a.Sqldb.Stats()),
+	})
 
-	b := goorm.Pdoconfig{}
-	b.SqldbPoolFromBytes(input.([]byte))
-	fmt.Printf("%+v\n", []interface{}{gostring.JsonMarshalIndent(b.SqldbPool().Stats())})
-
-	return reflect.TypeOf(a.SqldbPool()).String()
+	return reflect.TypeOf(pdoconfig_a.Sqldb).String()
 }
