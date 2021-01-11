@@ -84,11 +84,11 @@ func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStr
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.LinkString",tc)
+                    this.SQLLogger.Debug("耗时 - Pdoconfig.LinkString:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.LinkString，参数： ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.LinkString，参数：%+v ",)
             }
             return this.Next_CALL_LinkString()
         })
@@ -129,11 +129,11 @@ func (this *PdoconfigMiddleware) Add_MakeDbPool(middlewares ...Pdoconfig_MakeDbP
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeDbPool",tc)
+                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeDbPool:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeDbPool，参数： ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.MakeDbPool，参数：%+v ",)
             }
             return this.Next_CALL_MakeDbPool()
         })
@@ -174,11 +174,11 @@ func (this *PdoconfigMiddleware) Add_MakeSqldb(middlewares ...Pdoconfig_MakeSqld
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeSqldb",tc)
+                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeSqldb:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeSqldb，参数： ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.MakeSqldb，参数：%+v ",)
             }
             return this.Next_CALL_MakeSqldb()
         })
@@ -219,11 +219,11 @@ func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandl
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeTX",tc)
+                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeTX:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeTX，参数： ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.MakeTX，参数：%+v ",)
             }
             return this.Next_CALL_MakeTX()
         })
@@ -264,11 +264,11 @@ func (this *PdoconfigMiddleware) Add_NewPdo(middlewares ...Pdoconfig_NewPdoHandl
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.NewPdo",tc)
+                    this.SQLLogger.Debug("耗时 - Pdoconfig.NewPdo:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.NewPdo，参数： ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.NewPdo，参数：%+v ",)
             }
             return this.Next_CALL_NewPdo()
         })

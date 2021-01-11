@@ -96,11 +96,11 @@ func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_I
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.Insert",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.Insert:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.Insert，参数： ",sql,bindarray)
+                this.SQLLogger.Debug("调起 - Pdo.Insert，参数：%+v ",sql,bindarray)
             }
             return this.Next_CALL_Insert(sql,bindarray)
         })
@@ -141,11 +141,11 @@ func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecH
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.Exec",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.Exec:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.Exec，参数： ",sql,bindarray)
+                this.SQLLogger.Debug("调起 - Pdo.Exec，参数：%+v ",sql,bindarray)
             }
             return this.Next_CALL_Exec(sql,bindarray)
         })
@@ -186,11 +186,11 @@ func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc)
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.SelectOne",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.SelectOne:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.SelectOne，参数： ",sql,bindarray)
+                this.SQLLogger.Debug("调起 - Pdo.SelectOne，参数：%+v ",sql,bindarray)
             }
             return this.Next_CALL_SelectOne(sql,bindarray)
         })
@@ -231,11 +231,11 @@ func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjec
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.SelectOneObject",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.SelectOneObject:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.SelectOneObject，参数： ",sql,bindarray,orm_ptr)
+                this.SQLLogger.Debug("调起 - Pdo.SelectOneObject，参数：%+v ",sql,bindarray,orm_ptr)
             }
             return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
         })
@@ -276,11 +276,11 @@ func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc)
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.SelectAll",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.SelectAll:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.SelectAll，参数： ",sql,bindarray)
+                this.SQLLogger.Debug("调起 - Pdo.SelectAll，参数：%+v ",sql,bindarray)
             }
             return this.Next_CALL_SelectAll(sql,bindarray)
         })
@@ -321,11 +321,11 @@ func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjec
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.SelectallObject",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.SelectallObject:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.SelectallObject，参数： ",sql,bindarray,orm_ptr)
+                this.SQLLogger.Debug("调起 - Pdo.SelectallObject，参数：%+v ",sql,bindarray,orm_ptr)
             }
             return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
         })
@@ -366,11 +366,11 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.Commit",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.Commit:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.Commit，参数： ",recover)
+                this.SQLLogger.Debug("调起 - Pdo.Commit，参数：%+v ",recover)
             }
             this.Next_CALL_Commit(recover)
         })
@@ -412,11 +412,11 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.Rollback",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.Rollback:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.Rollback，参数： ",)
+                this.SQLLogger.Debug("调起 - Pdo.Rollback，参数：%+v ",)
             }
             this.Next_CALL_Rollback()
         })
@@ -458,11 +458,11 @@ func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc)
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdo.SelectVar",tc)
+                    this.SQLLogger.Debug("耗时 - Pdo.SelectVar:%+v",tc)
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.SelectVar，参数： ",sql,bindarray)
+                this.SQLLogger.Debug("调起 - Pdo.SelectVar，参数：%+v ",sql,bindarray)
             }
             return this.Next_CALL_SelectVar(sql,bindarray)
         })
