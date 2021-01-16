@@ -6,7 +6,7 @@ import (
 )
 
 func (this *Page) SqlLImit() string {
-	if this.PageID < 0 {
+	if this.PageID <= 0 {
 		this.PageID = 1
 	}
 	i := (this.PageID - 1) * this.Prepage
