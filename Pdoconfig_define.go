@@ -103,15 +103,22 @@ func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStr
 	}
 	return this.Next_CALL_LinkString
 }
-func (this *PdoconfigMiddleware) Next_LinkString()string {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoconfigMiddleware) LinkString()string {
     this.LinkStringindex = 0
     return this.Next_CALL_LinkString()
 }
+
+/**
+*/
 func (this *PdoconfigMiddleware) Next_CALL_LinkString()string{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.LinkStringHandleFuncs) == 0 {
 		this.Add_LinkString(this.Pdoconfig.LinkString)
 	} else if this.LinkStringindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.LinkStringHandleFuncs = append(this.LinkStringHandleFuncs, this.Pdoconfig.LinkString)
 	}
     index := this.LinkStringindex
@@ -148,15 +155,22 @@ func (this *PdoconfigMiddleware) Add_MakeDbPool(middlewares ...Pdoconfig_MakeDbP
 	}
 	return this.Next_CALL_MakeDbPool
 }
-func (this *PdoconfigMiddleware) Next_MakeDbPool()*Pdoconfig {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoconfigMiddleware) MakeDbPool()*Pdoconfig {
     this.MakeDbPoolindex = 0
     return this.Next_CALL_MakeDbPool()
 }
+
+/**
+*/
 func (this *PdoconfigMiddleware) Next_CALL_MakeDbPool()*Pdoconfig{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.MakeDbPoolHandleFuncs) == 0 {
 		this.Add_MakeDbPool(this.Pdoconfig.MakeDbPool)
 	} else if this.MakeDbPoolindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.MakeDbPoolHandleFuncs = append(this.MakeDbPoolHandleFuncs, this.Pdoconfig.MakeDbPool)
 	}
     index := this.MakeDbPoolindex
@@ -193,15 +207,22 @@ func (this *PdoconfigMiddleware) Add_MakeSqldb(middlewares ...Pdoconfig_MakeSqld
 	}
 	return this.Next_CALL_MakeSqldb
 }
-func (this *PdoconfigMiddleware) Next_MakeSqldb()*Pdoconfig {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoconfigMiddleware) MakeSqldb()*Pdoconfig {
     this.MakeSqldbindex = 0
     return this.Next_CALL_MakeSqldb()
 }
+
+/**
+*/
 func (this *PdoconfigMiddleware) Next_CALL_MakeSqldb()*Pdoconfig{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.MakeSqldbHandleFuncs) == 0 {
 		this.Add_MakeSqldb(this.Pdoconfig.MakeSqldb)
 	} else if this.MakeSqldbindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, this.Pdoconfig.MakeSqldb)
 	}
     index := this.MakeSqldbindex
@@ -238,15 +259,22 @@ func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandl
 	}
 	return this.Next_CALL_MakeTX
 }
-func (this *PdoconfigMiddleware) Next_MakeTX()*sql.Tx {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoconfigMiddleware) MakeTX()*sql.Tx {
     this.MakeTXindex = 0
     return this.Next_CALL_MakeTX()
 }
+
+/**
+*/
 func (this *PdoconfigMiddleware) Next_CALL_MakeTX()*sql.Tx{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.MakeTXHandleFuncs) == 0 {
 		this.Add_MakeTX(this.Pdoconfig.MakeTX)
 	} else if this.MakeTXindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.MakeTXHandleFuncs = append(this.MakeTXHandleFuncs, this.Pdoconfig.MakeTX)
 	}
     index := this.MakeTXindex
@@ -283,15 +311,22 @@ func (this *PdoconfigMiddleware) Add_NewPdo(middlewares ...Pdoconfig_NewPdoHandl
 	}
 	return this.Next_CALL_NewPdo
 }
-func (this *PdoconfigMiddleware) Next_NewPdo()*Pdo {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoconfigMiddleware) NewPdo()*Pdo {
     this.NewPdoindex = 0
     return this.Next_CALL_NewPdo()
 }
+
+/**
+*/
 func (this *PdoconfigMiddleware) Next_CALL_NewPdo()*Pdo{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.NewPdoHandleFuncs) == 0 {
 		this.Add_NewPdo(this.Pdoconfig.NewPdo)
 	} else if this.NewPdoindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.NewPdoHandleFuncs = append(this.NewPdoHandleFuncs, this.Pdoconfig.NewPdo)
 	}
     index := this.NewPdoindex

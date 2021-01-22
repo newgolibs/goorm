@@ -26,7 +26,7 @@ func (SelectallObject_263_0) run(input, arg interface{}) interface{} {
 	var pdoconfig *goorm.Pdoconfig = goorm.NewPdoconfigFromBytes(input.([]byte))
 	// 生成链接对象
 	pdo := pdoconfig.NewPdo()
-	defer pdo.Commit()
+	defer pdo.Commit(recover())
 
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})
