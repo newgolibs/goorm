@@ -81,15 +81,22 @@ func (this *PageMiddleware) Add_SqlLImit(middlewares ...Page_SqlLImitHandleFunc)
 	}
 	return this.Next_CALL_SqlLImit
 }
-func (this *PageMiddleware) Next_SqlLImit()string {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PageMiddleware) SqlLImit()string {
     this.SqlLImitindex = 0
     return this.Next_CALL_SqlLImit()
 }
+
+/**
+*/
 func (this *PageMiddleware) Next_CALL_SqlLImit()string{
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SqlLImitHandleFuncs) == 0 {
 		this.Add_SqlLImit(this.Page.SqlLImit)
 	} else if this.SqlLImitindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.SqlLImitHandleFuncs = append(this.SqlLImitHandleFuncs, this.Page.SqlLImit)
 	}
     index := this.SqlLImitindex
@@ -126,15 +133,22 @@ func (this *PageMiddleware) Add_SetTotal(middlewares ...Page_SetTotalHandleFunc)
 	}
 	return this.Next_CALL_SetTotal
 }
-func (this *PageMiddleware) Next_SetTotal(Total int) {
+/**
+* 中间件，替代函数入口
+*/
+func (this *PageMiddleware) SetTotal(Total int) {
     this.SetTotalindex = 0
     this.Next_CALL_SetTotal(Total)
 }
+
+/**
+*/
 func (this *PageMiddleware) Next_CALL_SetTotal(Total int){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.SetTotalHandleFuncs) == 0 {
 		this.Add_SetTotal(this.Page.SetTotal)
 	} else if this.SetTotalindex == 0 {
+        // 👇👇---- 原始函数入口
 		this.SetTotalHandleFuncs = append(this.SetTotalHandleFuncs, this.Page.SetTotal)
 	}
     index := this.SetTotalindex

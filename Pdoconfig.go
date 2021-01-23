@@ -15,6 +15,11 @@ func (this *Pdoconfig) LinkString() string {
 	return this.User + ":" + this.Password + "@tcp(" + this.Tns + ":" + strconv.Itoa(this.Port) + ")/" + this.DB + "?charset=utf8mb4"
 }
 
+/**    返回命令行下的连接字符串    */
+func (this *Pdoconfig) ShellLinkString() string {
+	return fmt.Sprintf("-h%s -P%d -u%s -p%s --default-character-set=utf8mb4 %s", this.Tns, this.Port, this.User, this.Password, this.DB)
+}
+
 /**    生成新的pdo对象    */
 func (this *Pdoconfig) NewPdoMiddleware() *PdoMiddleware {
 	pdo := &Pdo{TX: this.MakeTX(), Pdoconfig: this}

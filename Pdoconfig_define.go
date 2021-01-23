@@ -16,6 +16,8 @@ type PdoconfigInterface interface {
     MakeTX()*sql.Tx
     /**    生成新的pdo对象    */
     NewPdo()*Pdo
+    /**    返回命令行下的连接字符串    */
+    ShellLinkString()string
 
 }
 
@@ -25,6 +27,7 @@ type Pdoconfig_MakeDbPoolHandleFunc func()*Pdoconfig
 type Pdoconfig_MakeSqldbHandleFunc func()*Pdoconfig
 type Pdoconfig_MakeTXHandleFunc func()*sql.Tx
 type Pdoconfig_NewPdoHandleFunc func()*Pdo
+type Pdoconfig_ShellLinkStringHandleFunc func()string
 
 /**
 数据库配置;
@@ -71,6 +74,8 @@ type PdoconfigMiddleware struct{
     MakeTXHandleFuncs []Pdoconfig_MakeTXHandleFunc
     NewPdoindex int
     NewPdoHandleFuncs []Pdoconfig_NewPdoHandleFunc
+    ShellLinkStringindex int
+    ShellLinkStringHandleFuncs []Pdoconfig_ShellLinkStringHandleFunc
     Pdoconfig *Pdoconfig
     //日志记录的目标文件
     SQLLogger Logger
@@ -335,6 +340,58 @@ func (this *PdoconfigMiddleware) Next_CALL_NewPdo()*Pdo{
 
 	this.NewPdoindex++
 	return this.NewPdoHandleFuncs[index]()
+}
+
+func (this *PdoconfigMiddleware) Add_ShellLinkString(middlewares ...Pdoconfig_ShellLinkStringHandleFunc) Pdoconfig_ShellLinkStringHandleFunc {
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    if len(this.ShellLinkStringHandleFuncs) == 0 {
+        this.ShellLinkStringHandleFuncs = append(this.ShellLinkStringHandleFuncs, func() string {
+            defer func(start time.Time) {
+                if this.SQLLogger != nil {
+                    tc := time.Since(start).String()
+                    this.SQLLogger.Debug("耗时 - Pdoconfig.ShellLinkString:%+v",tc)
+                }
+            }(time.Now())
+            if this.SQLLogger != nil {
+                this.SQLLogger.Debug("调起 - Pdoconfig.ShellLinkString，参数：%+v ",)
+            }
+            return this.Next_CALL_ShellLinkString()
+        })
+    }
+
+    //
+	if this.ShellLinkStringHandleFuncs == nil {
+		this.ShellLinkStringHandleFuncs = make([]Pdoconfig_ShellLinkStringHandleFunc, 0)
+	}
+	for _, mid := range middlewares {
+		this.ShellLinkStringHandleFuncs = append(this.ShellLinkStringHandleFuncs, mid)
+	}
+	return this.Next_CALL_ShellLinkString
+}
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoconfigMiddleware) ShellLinkString()string {
+    this.ShellLinkStringindex = 0
+    return this.Next_CALL_ShellLinkString()
+}
+
+/**
+*/
+func (this *PdoconfigMiddleware) Next_CALL_ShellLinkString()string{
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.ShellLinkStringHandleFuncs) == 0 {
+		this.Add_ShellLinkString(this.Pdoconfig.ShellLinkString)
+	} else if this.ShellLinkStringindex == 0 {
+        // 👇👇---- 原始函数入口
+		this.ShellLinkStringHandleFuncs = append(this.ShellLinkStringHandleFuncs, this.Pdoconfig.ShellLinkString)
+	}
+    index := this.ShellLinkStringindex
+	if this.ShellLinkStringindex >= len(this.ShellLinkStringHandleFuncs) {
+		return ""	}
+
+	this.ShellLinkStringindex++
+	return this.ShellLinkStringHandleFuncs[index]()
 }
 
 //检测接口是否被完整的实现了，如果没有实现，那么编译不通过
