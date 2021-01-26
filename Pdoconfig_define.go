@@ -93,7 +93,7 @@ func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStr
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.LinkString，参数：%+v ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.LinkString，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_LinkString()
         })
@@ -145,7 +145,7 @@ func (this *PdoconfigMiddleware) Add_MakeDbPool(middlewares ...Pdoconfig_MakeDbP
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeDbPool，参数：%+v ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.MakeDbPool，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_MakeDbPool()
         })
@@ -197,7 +197,7 @@ func (this *PdoconfigMiddleware) Add_MakeSqldb(middlewares ...Pdoconfig_MakeSqld
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeSqldb，参数：%+v ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.MakeSqldb，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_MakeSqldb()
         })
@@ -249,7 +249,7 @@ func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandl
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeTX，参数：%+v ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.MakeTX，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_MakeTX()
         })
@@ -301,7 +301,7 @@ func (this *PdoconfigMiddleware) Add_NewPdo(middlewares ...Pdoconfig_NewPdoHandl
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.NewPdo，参数：%+v ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.NewPdo，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_NewPdo()
         })
@@ -353,7 +353,7 @@ func (this *PdoconfigMiddleware) Add_ShellLinkString(middlewares ...Pdoconfig_Sh
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.ShellLinkString，参数：%+v ",)
+                this.SQLLogger.Debug("调起 - Pdoconfig.ShellLinkString，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_ShellLinkString()
         })

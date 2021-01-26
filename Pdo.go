@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -15,8 +14,7 @@ func (this *Pdo) Rollback() {
 	var err error
 	err = this.TX.Rollback()
 	if err != nil {
-		_, file, line, _ := runtime.Caller(0)
-		fmt.Printf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
+		panic("rollback error:" + err.Error())
 	}
 }
 
@@ -30,8 +28,7 @@ func (this *Pdo) Commit(recover interface{}) {
 	} else { // 👈👈----  没有错误，提交
 		err = this.TX.Commit()
 		if err != nil {
-			_, file, line, _ := runtime.Caller(0)
-			fmt.Printf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line)
+			panic("commit error:" + err.Error())
 		}
 	}
 }
