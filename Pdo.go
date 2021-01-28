@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
-	"runtime"
-	"strconv"
 )
 
 /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
@@ -19,8 +17,8 @@ func (this *Pdo) Rollback() {
 }
 
 /**    提交事务，并且还继续开启事务    */
-func (this *Pdo) Commit_NewTX(recover interface{}) {
-	this.Commit(recover)
+func (this *Pdo) Commit_NewTX() {
+	this.Commit(nil)
 	this.TX = this.Pdoconfig.MakeTX()
 }
 
@@ -157,14 +155,12 @@ func (this *Pdo) SelectVar(sql string, bindarray []interface{}) (string, error) 
 func (this *Pdo) pdoexec(sql string, bindarray []interface{}) (sql.Result, error) {
 	stmt, err := this.TX.Prepare(sql)
 	if err != nil {
-		_, file, line, _ := runtime.Caller(0)
-		panic(err.Error() + "@file: " + file + ":" + strconv.Itoa(line+1))
+		panic(err.Error())
 	}
 	defer stmt.Close() // Prepared statements take up server resources and should be closed after use.
 	Result, err := stmt.Exec(bindarray...)
 	if err != nil {
-		_, file, line, _ := runtime.Caller(0)
-		panic(err.Error() + "@file: " + file + ":" + strconv.Itoa(line+1))
+		panic(err.Error())
 	}
 	return Result, nil
 }
@@ -191,4 +187,13 @@ func (this *Pdo) Insert(sql string, bindarray []interface{}) (int64, error) {
 	}
 	num, err := Result.LastInsertId()
 	return num, err
+}
+
+/**
+设置日志debug，
+同时，也给底层的配置Pdoconfig也加上统计
+*/
+func (this *PdoMiddleware) SetSQLLogger(l Logger) {
+	this.SQLLogger = l
+	this.Pdo.Pdoconfig.SQLLogger = l
 }

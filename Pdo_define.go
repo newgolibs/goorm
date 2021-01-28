@@ -29,7 +29,7 @@ type PdoInterface interface {
     /**    查询count    */
     SelectVar(sql string,bindarray []interface{})(string,error)
     /**    提交事务，并且还继续开启事务    */
-    Commit_NewTX(recover interface{})
+    Commit_NewTX()
 
 }
 
@@ -43,7 +43,7 @@ type Pdo_SelectallObjectHandleFunc func(sql string,bindarray []interface{},orm_p
 type Pdo_CommitHandleFunc func(recover interface{})
 type Pdo_RollbackHandleFunc func()
 type Pdo_SelectVarHandleFunc func(sql string,bindarray []interface{})(string,error)
-type Pdo_Commit_NewTXHandleFunc func(recover interface{})
+type Pdo_Commit_NewTXHandleFunc func()
 
 /**
 数据库执行，返回数据;
@@ -52,8 +52,8 @@ type Pdo struct
 {
     /*事务链接句柄*/
     TX *sql.Tx
-    /*数据库配置*/
-    Pdoconfig *Pdoconfig
+    /*数据库配置，中间件*/
+    Pdoconfig *PdoconfigMiddleware
 }
 
 
@@ -567,7 +567,7 @@ func (this *PdoMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{
 func (this *PdoMiddleware) Add_Commit_NewTX(middlewares ...Pdo_Commit_NewTXHandleFunc) Pdo_Commit_NewTXHandleFunc {
     // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.Commit_NewTXHandleFuncs) == 0 {
-        this.Commit_NewTXHandleFuncs = append(this.Commit_NewTXHandleFuncs, func(recover interface{})  {
+        this.Commit_NewTXHandleFuncs = append(this.Commit_NewTXHandleFuncs, func()  {
             defer func(start time.Time) {
                 if this.SQLLogger != nil {
                     tc := time.Since(start).String()
@@ -575,9 +575,9 @@ func (this *PdoMiddleware) Add_Commit_NewTX(middlewares ...Pdo_Commit_NewTXHandl
                 }
             }(time.Now())
             if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdo.Commit_NewTX，参数：%#v ",[]interface{}{recover})
+                this.SQLLogger.Debug("调起 - Pdo.Commit_NewTX，参数：%#v ",[]interface{}{})
             }
-            this.Next_CALL_Commit_NewTX(recover)
+            this.Next_CALL_Commit_NewTX()
         })
     }
 
@@ -593,14 +593,14 @@ func (this *PdoMiddleware) Add_Commit_NewTX(middlewares ...Pdo_Commit_NewTXHandl
 /**
 * 中间件，替代函数入口
 */
-func (this *PdoMiddleware) Commit_NewTX(recover interface{}) {
+func (this *PdoMiddleware) Commit_NewTX() {
     this.Commit_NewTXindex = 0
-    this.Next_CALL_Commit_NewTX(recover)
+    this.Next_CALL_Commit_NewTX()
 }
 
 /**
 */
-func (this *PdoMiddleware) Next_CALL_Commit_NewTX(recover interface{}){
+func (this *PdoMiddleware) Next_CALL_Commit_NewTX(){
     // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
 	if len(this.Commit_NewTXHandleFuncs) == 0 {
 		this.Add_Commit_NewTX(this.Pdo.Commit_NewTX)
@@ -614,7 +614,7 @@ func (this *PdoMiddleware) Next_CALL_Commit_NewTX(recover interface{}){
 	}
 
 	this.Commit_NewTXindex++
-    this.Commit_NewTXHandleFuncs[index](recover)
+    this.Commit_NewTXHandleFuncs[index]()
 }
 
 //检测接口是否被完整的实现了，如果没有实现，那么编译不通过

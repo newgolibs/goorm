@@ -10,8 +10,6 @@ type PdoconfigInterface interface {
     LinkString()string
     /**    链接池    */
     MakeDbPool()*Pdoconfig
-    /**    独立的新的数据库连接池    */
-    MakeSqldb()*Pdoconfig
     /**    新开事务线程    */
     MakeTX()*sql.Tx
     /**    生成新的pdo对象    */
@@ -24,7 +22,6 @@ type PdoconfigInterface interface {
 //定义函数的结构体，方便扩展成中间件接
 type Pdoconfig_LinkStringHandleFunc func()string
 type Pdoconfig_MakeDbPoolHandleFunc func()*Pdoconfig
-type Pdoconfig_MakeSqldbHandleFunc func()*Pdoconfig
 type Pdoconfig_MakeTXHandleFunc func()*sql.Tx
 type Pdoconfig_NewPdoHandleFunc func()*Pdo
 type Pdoconfig_ShellLinkStringHandleFunc func()string
@@ -68,8 +65,6 @@ type PdoconfigMiddleware struct{
     LinkStringHandleFuncs []Pdoconfig_LinkStringHandleFunc
     MakeDbPoolindex int
     MakeDbPoolHandleFuncs []Pdoconfig_MakeDbPoolHandleFunc
-    MakeSqldbindex int
-    MakeSqldbHandleFuncs []Pdoconfig_MakeSqldbHandleFunc
     MakeTXindex int
     MakeTXHandleFuncs []Pdoconfig_MakeTXHandleFunc
     NewPdoindex int
@@ -184,58 +179,6 @@ func (this *PdoconfigMiddleware) Next_CALL_MakeDbPool()*Pdoconfig{
 
 	this.MakeDbPoolindex++
 	return this.MakeDbPoolHandleFuncs[index]()
-}
-
-func (this *PdoconfigMiddleware) Add_MakeSqldb(middlewares ...Pdoconfig_MakeSqldbHandleFunc) Pdoconfig_MakeSqldbHandleFunc {
-    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
-    if len(this.MakeSqldbHandleFuncs) == 0 {
-        this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, func() *Pdoconfig {
-            defer func(start time.Time) {
-                if this.SQLLogger != nil {
-                    tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeSqldb:%+v",tc)
-                }
-            }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeSqldb，参数：%#v ",[]interface{}{})
-            }
-            return this.Next_CALL_MakeSqldb()
-        })
-    }
-
-    //
-	if this.MakeSqldbHandleFuncs == nil {
-		this.MakeSqldbHandleFuncs = make([]Pdoconfig_MakeSqldbHandleFunc, 0)
-	}
-	for _, mid := range middlewares {
-		this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, mid)
-	}
-	return this.Next_CALL_MakeSqldb
-}
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoconfigMiddleware) MakeSqldb()*Pdoconfig {
-    this.MakeSqldbindex = 0
-    return this.Next_CALL_MakeSqldb()
-}
-
-/**
-*/
-func (this *PdoconfigMiddleware) Next_CALL_MakeSqldb()*Pdoconfig{
-    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
-	if len(this.MakeSqldbHandleFuncs) == 0 {
-		this.Add_MakeSqldb(this.Pdoconfig.MakeSqldb)
-	} else if this.MakeSqldbindex == 0 {
-        // 👇👇---- 原始函数入口
-		this.MakeSqldbHandleFuncs = append(this.MakeSqldbHandleFuncs, this.Pdoconfig.MakeSqldb)
-	}
-    index := this.MakeSqldbindex
-	if this.MakeSqldbindex >= len(this.MakeSqldbHandleFuncs) {
-		return nil	}
-
-	this.MakeSqldbindex++
-	return this.MakeSqldbHandleFuncs[index]()
 }
 
 func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandleFunc) Pdoconfig_MakeTXHandleFunc {
