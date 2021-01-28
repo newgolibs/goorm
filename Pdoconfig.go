@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"runtime"
 	"strconv"
 )
 
@@ -39,8 +38,7 @@ func (this *Pdoconfig) MakeTX() *sql.Tx {
 	//log.Printf("打开数据库事务")
 	begin, err := this.Sqldb.Begin() // 👈👈----在原来的线程池上，单开一个事务进程
 	if err != nil {
-		_, file, line, _ := runtime.Caller(0)
-		panic(fmt.Sprintf("\033[0;31merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
+		panic(err.Error())
 	}
 	return begin
 }
@@ -52,8 +50,7 @@ func (this *Pdoconfig) MakeSqldb() *Pdoconfig {
 		// 这里数据库账户密码，ip，端口。配置错误，都不会导致崩溃。崩溃是产生在查询的时候
 		sqldb, err := sql.Open("mysql", this.LinkString())
 		if err != nil {
-			_, file, line, _ := runtime.Caller(0)
-			panic(fmt.Sprintf("\033[41;36merr:%+v %+v:%+v\033[0m\n", []interface{}{err}, file, line))
+			panic(err.Error())
 		}
 		this.Sqldb = sqldb
 	}

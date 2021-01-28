@@ -18,6 +18,12 @@ func (this *Pdo) Rollback() {
 	}
 }
 
+/**    提交事务，并且还继续开启事务    */
+func (this *Pdo) Commit_NewTX(recover interface{}) {
+	this.Commit(recover)
+	this.TX = this.Pdoconfig.MakeTX()
+}
+
 /**
 提交事务
 */
