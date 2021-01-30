@@ -96,13 +96,16 @@ func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStr
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdoconfig.LinkString:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","LinkString").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdoconfig.LinkString，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","LinkString").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_LinkString()
         })
@@ -150,13 +153,16 @@ func (this *PdoconfigMiddleware) Add_MakeDbPool(middlewares ...Pdoconfig_MakeDbP
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdoconfig.MakeDbPool:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","MakeDbPool").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdoconfig.MakeDbPool，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","MakeDbPool").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_MakeDbPool()
         })
@@ -204,13 +210,16 @@ func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandl
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdoconfig.MakeTX:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","MakeTX").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdoconfig.MakeTX，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","MakeTX").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_MakeTX()
         })
@@ -258,13 +267,16 @@ func (this *PdoconfigMiddleware) Add_NewPdo(middlewares ...Pdoconfig_NewPdoHandl
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdoconfig.NewPdo:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","NewPdo").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdoconfig.NewPdo，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","NewPdo").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_NewPdo()
         })
@@ -312,13 +324,16 @@ func (this *PdoconfigMiddleware) Add_ShellLinkString(middlewares ...Pdoconfig_Sh
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdoconfig.ShellLinkString:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","ShellLinkString").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdoconfig.ShellLinkString，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","ShellLinkString").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_ShellLinkString()
         })

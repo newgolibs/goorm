@@ -113,13 +113,16 @@ func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_I
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.Insert:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Insert").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.Insert，参数：%#v ",[]interface{}{sql,bindarray})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray}).
+                            Str("func","Insert").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_Insert(sql,bindarray)
         })
@@ -167,13 +170,16 @@ func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecH
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.Exec:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Exec").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.Exec，参数：%#v ",[]interface{}{sql,bindarray})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray}).
+                            Str("func","Exec").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_Exec(sql,bindarray)
         })
@@ -221,13 +227,16 @@ func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc)
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.SelectOne:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","SelectOne").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.SelectOne，参数：%#v ",[]interface{}{sql,bindarray})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray}).
+                            Str("func","SelectOne").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_SelectOne(sql,bindarray)
         })
@@ -275,13 +284,16 @@ func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjec
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.SelectOneObject:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","SelectOneObject").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.SelectOneObject，参数：%#v ",[]interface{}{sql,bindarray,orm_ptr})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray,orm_ptr}).
+                            Str("func","SelectOneObject").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
         })
@@ -329,13 +341,16 @@ func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc)
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.SelectAll:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","SelectAll").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.SelectAll，参数：%#v ",[]interface{}{sql,bindarray})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray}).
+                            Str("func","SelectAll").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_SelectAll(sql,bindarray)
         })
@@ -383,13 +398,16 @@ func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjec
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.SelectallObject:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","SelectallObject").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.SelectallObject，参数：%#v ",[]interface{}{sql,bindarray,orm_ptr})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray,orm_ptr}).
+                            Str("func","SelectallObject").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
         })
@@ -437,13 +455,16 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.Commit:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Commit").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.Commit，参数：%#v ",[]interface{}{recover})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{recover}).
+                            Str("func","Commit").Logger()
+                zloger.Debug().Msg("调起")
             }
             this.Next_CALL_Commit(recover)
         })
@@ -492,13 +513,16 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.Rollback:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Rollback").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.Rollback，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","Rollback").Logger()
+                zloger.Debug().Msg("调起")
             }
             this.Next_CALL_Rollback()
         })
@@ -547,13 +571,16 @@ func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc)
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.SelectVar:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","SelectVar").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.SelectVar，参数：%#v ",[]interface{}{sql,bindarray})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{sql,bindarray}).
+                            Str("func","SelectVar").Logger()
+                zloger.Debug().Msg("调起")
             }
             return this.Next_CALL_SelectVar(sql,bindarray)
         })
@@ -601,13 +628,16 @@ func (this *PdoMiddleware) Add_Commit_NewTX(middlewares ...Pdo_Commit_NewTXHandl
             defer func(start time.Time) {
                 if this.zloger != nil {
                     tc := time.Since(start).String()
-                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
-                    zloger.Debug().Msgf("耗时 - Pdo.Commit_NewTX:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Commit_NewTX").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
                 }
             }(time.Now())
             if this.zloger != nil {
-                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
-                zloger.Debug().Msgf("调起 - Pdo.Commit_NewTX，参数：%#v ",[]interface{}{})
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","Commit_NewTX").Logger()
+                zloger.Debug().Msg("调起")
             }
             this.Next_CALL_Commit_NewTX()
         })
