@@ -63,12 +63,12 @@ func (this *Pdoconfig) MakeDbPool() *Pdoconfig {
 			panic("MakeDbPool error:" + err.Error())
 		}
 		this.Sqldb = sqldb
+		// 这个是web服务，所以链接上去了，别想着关闭了。
+		// defer db.Close()
+		// 设置最大连接数
+		this.Sqldb.SetMaxOpenConns(10)
+		// 设置最大空闲连接数
+		this.Sqldb.SetMaxIdleConns(2)
 	}
-	// 这个是web服务，所以链接上去了，别想着关闭了。
-	// defer db.Close()
-	// 设置最大连接数
-	this.Sqldb.SetMaxOpenConns(10)
-	// 设置最大空闲连接数
-	this.Sqldb.SetMaxIdleConns(2)
 	return this
 }
