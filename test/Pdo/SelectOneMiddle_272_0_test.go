@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/newgolibs/goorm"
 	"github.com/newgolibs/goorm/test/Pdo/SelectOneMiddle_272_0_test"
+	zlog "github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -37,7 +38,7 @@ func (l) Error(format string, v ...interface{}) {
 func (SelectOneMiddle_272_0) run(input, arg interface{}) interface{} {
 	pdoconfig := goorm.NewPdoconfigFromBytes(input.([]byte))
 	//pdoMiddleware := pdoconfig.NewPdoMiddleware(l{})
-	pdoMiddleware := pdoconfig.NewPdoMiddleware(nil)
+	pdoMiddleware := pdoconfig.NewPdoMiddleware(&zlog.Logger)
 	defer pdoMiddleware.Commit(recover())
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})

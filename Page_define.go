@@ -1,5 +1,6 @@
 package goorm
 import (
+        "github.com/rs/zerolog"
     "time"
 )
 
@@ -51,7 +52,18 @@ type PageMiddleware struct{
     SetTotalHandleFuncs []Page_SetTotalHandleFunc
     Page *Page
     //日志记录的目标文件
-    SQLLogger Logger
+    zloger *zerolog.Logger
+}
+
+/**
+设置日志写入类。
+*/
+func (this *PageMiddleware) SetZloger(l *zerolog.Logger) *PageMiddleware {
+    Zloger := l.With().Str("library","goorm").
+                    Str("class","PageMiddleware").
+                    Logger()
+    this.zloger = &Zloger
+    return this
 }
 
 
@@ -60,13 +72,15 @@ func (this *PageMiddleware) Add_SqlLImit(middlewares ...Page_SqlLImitHandleFunc)
     if len(this.SqlLImitHandleFuncs) == 0 {
         this.SqlLImitHandleFuncs = append(this.SqlLImitHandleFuncs, func() string {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Page.SqlLImit:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Page.SqlLImit:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Page.SqlLImit，参数：%+v ",)
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Page.SqlLImit，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_SqlLImit()
         })
@@ -112,13 +126,15 @@ func (this *PageMiddleware) Add_SetTotal(middlewares ...Page_SetTotalHandleFunc)
     if len(this.SetTotalHandleFuncs) == 0 {
         this.SetTotalHandleFuncs = append(this.SetTotalHandleFuncs, func(Total int)  {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Page.SetTotal:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Page.SetTotal:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Page.SetTotal，参数：%+v ",Total)
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Page.SetTotal，参数：%#v ",[]interface{}{Total})
             }
             this.Next_CALL_SetTotal(Total)
         })

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/rs/zerolog"
 	"strconv"
 )
 
@@ -20,17 +21,20 @@ func (this *Pdoconfig) ShellLinkString() string {
 }
 
 /**    生成新的pdo对象    */
-func (this *Pdoconfig) NewPdoMiddleware(l Logger) *PdoMiddleware {
-	if l == nil {
-		pdoconfig := &PdoconfigMiddleware{Pdoconfig: this}
-		pdoconfig.MakeDbPool()
-		pdo := &Pdo{TX: pdoconfig.MakeTX(), Pdoconfig: pdoconfig}
+func (this *Pdoconfig) NewPdoMiddleware(l *zerolog.Logger) *PdoMiddleware {
+	PdoconfigMiddlewarevar := &PdoconfigMiddleware{Pdoconfig: this}
+	if l == nil { // 👈👈---- 不带日志的查询
+		PdoconfigMiddlewarevar.MakeDbPool()
+		pdo := &Pdo{TX: PdoconfigMiddlewarevar.MakeTX(), Pdoconfig: PdoconfigMiddlewarevar}
 		return pdo.NewPdoMiddleware()
 	}
-	pdoconfig := &PdoconfigMiddleware{Pdoconfig: this, SQLLogger: l}
-	pdoconfig.MakeDbPool()
-	pdo := &Pdo{TX: pdoconfig.MakeTX(), Pdoconfig: pdoconfig}
-	return &PdoMiddleware{Pdo: pdo, SQLLogger: l}
+	// 👇👇---- 带日志的查询
+	PdoconfigMiddlewarevar.SetZloger(l)
+	PdoconfigMiddlewarevar.MakeDbPool()
+	pdo := &Pdo{TX: PdoconfigMiddlewarevar.MakeTX(), Pdoconfig: PdoconfigMiddlewarevar}
+	PdoMiddlewarevar := &PdoMiddleware{Pdo: pdo}
+	PdoMiddlewarevar.SetZloger(l)
+	return PdoMiddlewarevar
 }
 
 /**    生成新的pdo对象    */
@@ -43,20 +47,20 @@ func (this *Pdoconfig) MakeTX() *sql.Tx {
 	//log.Printf("打开数据库事务")
 	begin, err := this.Sqldb.Begin() // 👈👈----在原来的线程池上，单开一个事务进程
 	if err != nil {
-		panic(err.Error())
+		panic("MakeTX error:" + err.Error())
 	}
 	return begin
 }
 
 /**
-和数据库建立持久链接，万一中途被断开了呢？
+和数据库建立持久链接，万一中途被断开了呢？还是能自动恢复连接的
 */
 func (this *Pdoconfig) MakeDbPool() *Pdoconfig {
 	if this.Sqldb == nil {
 		// 这里数据库账户密码，ip，端口。配置错误，都不会导致崩溃。崩溃是产生在查询的时候
 		sqldb, err := sql.Open("mysql", this.LinkString())
 		if err != nil {
-			panic(err.Error())
+			panic("MakeDbPool error:" + err.Error())
 		}
 		this.Sqldb = sqldb
 	}

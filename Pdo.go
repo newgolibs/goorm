@@ -38,10 +38,10 @@ func (this *Pdo) Commit(recover interface{}) {
 }
 
 /**    执行Query方法，返回rows    */
-func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []interface{}, []sql.RawBytes, []string, error) {
+func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []interface{}, []sql.RawBytes, []string) {
 	rows, err := this.TX.Query(sqlstring, bindarray...)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		panic("query error:" + err.Error())
 	}
 
 	columns, _ := rows.Columns()
@@ -56,17 +56,14 @@ func (this *Pdo) query(sqlstring string, bindarray []interface{}) (*sql.Rows, []
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	return rows, scanArgs, values, columns, nil
+	return rows, scanArgs, values, columns
 }
 
 /**
 查询多行数据
 */
 func (this *Pdo) SelectAll(sqlstring string, bindarray []interface{}) ([]map[string]string, error) {
-	rows, scanArgs, values, columns, err := this.query(sqlstring, bindarray)
-	if err != nil {
-		return []map[string]string{}, err
-	}
+	rows, scanArgs, values, columns := this.query(sqlstring, bindarray)
 	defer rows.Close()
 	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
 	var rowMaps_All []map[string]string
@@ -110,15 +107,15 @@ func (this *Pdo) SelectallObject(sql string, bindarray []interface{}, orm_ptr in
 
 /**    返回一行数据，一般是返回一个结构体    */
 func (this *Pdo) SelectOne(sqlstring string, bindarray []interface{}) (map[string]string, error) {
-	rows, scanArgs, values, columns, err := this.query(sqlstring, bindarray)
-	if err != nil {
-		return map[string]string{}, err
-	}
+	rows, scanArgs, values, columns := this.query(sqlstring, bindarray)
 	defer rows.Close()
 	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
 	var rowMap = make(map[string]string)
 	for rows.Next() {
-		rows.Scan(scanArgs...)
+		err := rows.Scan(scanArgs...)
+		if err != nil {
+			panic("rows.Scan error:" + err.Error())
+		}
 		for i, col := range values {
 			// Here we can check if the value is nil (NULL value)
 			if col != nil {
@@ -152,27 +149,24 @@ func (this *Pdo) SelectVar(sql string, bindarray []interface{}) (string, error) 
 /**
 正在执行sql的部分代码
 */
-func (this *Pdo) pdoexec(sql string, bindarray []interface{}) (sql.Result, error) {
+func (this *Pdo) pdoexec(sql string, bindarray []interface{}) sql.Result {
 	stmt, err := this.TX.Prepare(sql)
 	if err != nil {
-		panic(err.Error())
+		panic("pdoexec error:" + err.Error())
 	}
 	defer stmt.Close() // Prepared statements take up server resources and should be closed after use.
 	Result, err := stmt.Exec(bindarray...)
 	if err != nil {
-		panic(err.Error())
+		panic("stmt.Exec error:" + err.Error())
 	}
-	return Result, nil
+	return Result
 }
 
 /**
   执行指定的SQL语句;
 */
 func (this *Pdo) Exec(sql string, bindarray []interface{}) (int64, error) {
-	Result, err := this.pdoexec(sql, bindarray)
-	if err != nil {
-		return 0, err
-	}
+	Result := this.pdoexec(sql, bindarray)
 	num, err := Result.RowsAffected()
 	return num, err
 }
@@ -181,19 +175,8 @@ func (this *Pdo) Exec(sql string, bindarray []interface{}) (int64, error) {
   写入数据;
 */
 func (this *Pdo) Insert(sql string, bindarray []interface{}) (int64, error) {
-	Result, err := this.pdoexec(sql, bindarray)
-	if err != nil {
-		return 0, err
-	}
+	Result := this.pdoexec(sql, bindarray)
 	num, err := Result.LastInsertId()
 	return num, err
 }
 
-/**
-设置日志debug，
-同时，也给底层的配置Pdoconfig也加上统计
-*/
-func (this *PdoMiddleware) SetSQLLogger(l Logger) {
-	this.SQLLogger = l
-	this.Pdo.Pdoconfig.SQLLogger = l
-}

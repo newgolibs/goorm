@@ -1,6 +1,7 @@
 package goorm
 import (
         "database/sql"
+        "github.com/rs/zerolog"
     "time"
 )
 
@@ -73,7 +74,18 @@ type PdoconfigMiddleware struct{
     ShellLinkStringHandleFuncs []Pdoconfig_ShellLinkStringHandleFunc
     Pdoconfig *Pdoconfig
     //日志记录的目标文件
-    SQLLogger Logger
+    zloger *zerolog.Logger
+}
+
+/**
+设置日志写入类。
+*/
+func (this *PdoconfigMiddleware) SetZloger(l *zerolog.Logger) *PdoconfigMiddleware {
+    Zloger := l.With().Str("library","goorm").
+                    Str("class","PdoconfigMiddleware").
+                    Logger()
+    this.zloger = &Zloger
+    return this
 }
 
 
@@ -82,13 +94,15 @@ func (this *PdoconfigMiddleware) Add_LinkString(middlewares ...Pdoconfig_LinkStr
     if len(this.LinkStringHandleFuncs) == 0 {
         this.LinkStringHandleFuncs = append(this.LinkStringHandleFuncs, func() string {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.LinkString:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Pdoconfig.LinkString:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.LinkString，参数：%#v ",[]interface{}{})
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Pdoconfig.LinkString，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_LinkString()
         })
@@ -134,13 +148,15 @@ func (this *PdoconfigMiddleware) Add_MakeDbPool(middlewares ...Pdoconfig_MakeDbP
     if len(this.MakeDbPoolHandleFuncs) == 0 {
         this.MakeDbPoolHandleFuncs = append(this.MakeDbPoolHandleFuncs, func() *Pdoconfig {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeDbPool:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Pdoconfig.MakeDbPool:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeDbPool，参数：%#v ",[]interface{}{})
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Pdoconfig.MakeDbPool，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_MakeDbPool()
         })
@@ -186,13 +202,15 @@ func (this *PdoconfigMiddleware) Add_MakeTX(middlewares ...Pdoconfig_MakeTXHandl
     if len(this.MakeTXHandleFuncs) == 0 {
         this.MakeTXHandleFuncs = append(this.MakeTXHandleFuncs, func() *sql.Tx {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.MakeTX:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Pdoconfig.MakeTX:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.MakeTX，参数：%#v ",[]interface{}{})
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Pdoconfig.MakeTX，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_MakeTX()
         })
@@ -238,13 +256,15 @@ func (this *PdoconfigMiddleware) Add_NewPdo(middlewares ...Pdoconfig_NewPdoHandl
     if len(this.NewPdoHandleFuncs) == 0 {
         this.NewPdoHandleFuncs = append(this.NewPdoHandleFuncs, func() *Pdo {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.NewPdo:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Pdoconfig.NewPdo:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.NewPdo，参数：%#v ",[]interface{}{})
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Pdoconfig.NewPdo，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_NewPdo()
         })
@@ -290,13 +310,15 @@ func (this *PdoconfigMiddleware) Add_ShellLinkString(middlewares ...Pdoconfig_Sh
     if len(this.ShellLinkStringHandleFuncs) == 0 {
         this.ShellLinkStringHandleFuncs = append(this.ShellLinkStringHandleFuncs, func() string {
             defer func(start time.Time) {
-                if this.SQLLogger != nil {
+                if this.zloger != nil {
                     tc := time.Since(start).String()
-                    this.SQLLogger.Debug("耗时 - Pdoconfig.ShellLinkString:%+v",tc)
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").Logger()
+                    zloger.Debug().Msgf("耗时 - Pdoconfig.ShellLinkString:%+v",tc)
                 }
             }(time.Now())
-            if this.SQLLogger != nil {
-                this.SQLLogger.Debug("调起 - Pdoconfig.ShellLinkString，参数：%#v ",[]interface{}{})
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").Logger()
+                zloger.Debug().Msgf("调起 - Pdoconfig.ShellLinkString，参数：%#v ",[]interface{}{})
             }
             return this.Next_CALL_ShellLinkString()
         })
