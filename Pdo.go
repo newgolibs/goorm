@@ -106,8 +106,8 @@ func (this *Pdo) SelectallObject(sql string, bindarray []interface{}, orm_ptr in
 }
 
 /**    返回一行数据，一般是返回一个结构体    */
-func (this *Pdo) SelectOne(sqlstring string, bindarray []interface{}) (map[string]string, error) {
-	rows, scanArgs, values, columns := this.query(sqlstring, bindarray)
+func (this *Pdo) SelectOne(sql string, bindarray []interface{}) (map[string]string, error) {
+	rows, scanArgs, values, columns := this.query(sql, bindarray)
 	defer rows.Close()
 	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
 	var rowMap = make(map[string]string)

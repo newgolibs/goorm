@@ -20,6 +20,24 @@ func (this *Pdoconfig) ShellLinkString() string {
 	return fmt.Sprintf("-h%s -P%d -u%s -p%s --default-character-set=utf8mb4 %s", this.Tns, this.Port, this.User, this.Password, this.DB)
 }
 
+/** 生成数据库查询对象 */
+func (this *Pdoconfig) NewDBMiddleware(l *zerolog.Logger) *DBMiddleware {
+	PdoconfigMiddlewarevar := &PdoconfigMiddleware{Pdoconfig: this}
+
+	if l == nil { // 👈👈---- 不带日志的查询
+		PdoconfigMiddlewarevar.MakeDbPool()
+		db := &DB{TX: this.Sqldb, Pdoconfig: PdoconfigMiddlewarevar}
+		return db.NewDBMiddleware()
+	}
+	// 👇👇---- 带日志的查询
+	PdoconfigMiddlewarevar.SetZloger(l)
+	PdoconfigMiddlewarevar.MakeDbPool()
+	db := &DB{TX: this.Sqldb, Pdoconfig: PdoconfigMiddlewarevar}
+	DBMiddlewarevar := &DBMiddleware{DB: db}
+	DBMiddlewarevar.SetZloger(l)
+	return DBMiddlewarevar
+}
+
 /**    生成新的pdo对象    */
 func (this *Pdoconfig) NewPdoMiddleware(l *zerolog.Logger) *PdoMiddleware {
 	PdoconfigMiddlewarevar := &PdoconfigMiddleware{Pdoconfig: this}
