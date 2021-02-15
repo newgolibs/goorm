@@ -109,25 +109,27 @@ func (this *Pdo) SelectallObject(sql string, bindarray []interface{}, orm_ptr in
 func (this *Pdo) SelectOne(sql string, bindarray []interface{}) (map[string]string, error) {
 	rows, scanArgs, values, columns := this.query(sql, bindarray)
 	defer rows.Close()
-	if rows.NextResultSet() {
-		// 这个map用来存储一行数据，列名为map的key，map的value为列的值
-		var rowMap = make(map[string]string)
-		for rows.Next() {
-			err := rows.Scan(scanArgs...)
-			if err != nil {
-				panic("rows.Scan error:" + err.Error())
-			}
-			for i, col := range values {
-				// Here we can check if the value is nil (NULL value)
-				if col != nil {
-					rowMap[columns[i]] = string(col)
-				}
-			}
-			break
+	i := 0
+	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
+	var rowMap = make(map[string]string)
+	for rows.Next() {
+		i++
+		err := rows.Scan(scanArgs...)
+		if err != nil {
+			panic("rows.Scan error:" + err.Error())
 		}
-		return rowMap, nil
-	} else {
+		for i, col := range values {
+			// Here we can check if the value is nil (NULL value)
+			if col != nil {
+				rowMap[columns[i]] = string(col)
+			}
+		}
+		break
+	}
+	if i == 0 {
 		return nil, errors.New("没有查询到数据")
+	} else {
+		return rowMap, nil
 	}
 }
 

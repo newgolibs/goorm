@@ -37,23 +37,25 @@ func (this *DB) SelectOne(sql string, bindarray []interface{}) (map[string]strin
 	defer rows.Close()
 	// 这个map用来存储一行数据，列名为map的key，map的value为列的值
 	var rowMap = make(map[string]string)
-	if rows.NextResultSet() {
-		for rows.Next() {
-			err := rows.Scan(scanArgs...)
-			if err != nil {
-				panic("rows.Scan error:" + err.Error())
-			}
-			for i, col := range values {
-				// Here we can check if the value is nil (NULL value)
-				if col != nil {
-					rowMap[columns[i]] = string(col)
-				}
-			}
-			break
+	i := 0
+	for rows.Next() {
+		i++
+		err := rows.Scan(scanArgs...)
+		if err != nil {
+			panic("rows.Scan error:" + err.Error())
 		}
-		return rowMap, nil
-	} else {
+		for i, col := range values {
+			// Here we can check if the value is nil (NULL value)
+			if col != nil {
+				rowMap[columns[i]] = string(col)
+			}
+		}
+		break
+	}
+	if i == 0 {
 		return nil, errors.New("没有查询到数据")
+	} else {
+		return rowMap, nil
 	}
 }
 

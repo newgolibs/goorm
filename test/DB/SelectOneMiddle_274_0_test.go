@@ -24,7 +24,6 @@ func TestDB_SelectOneMiddle_274_0(t *testing.T) {
 
 func (SelectOneMiddle_274_0) run(input, arg interface{}) interface{} {
 	pdoconfig := goorm.NewPdoconfigFromBytes(input.([]byte))
-	//pdoMiddleware := pdoconfig.NewPdoMiddleware(l{})
 	pdoMiddleware := pdoconfig.NewDBMiddleware(&zlog.Logger)
 	// 初始化一个空壳的对象
 	var arg2 = arg.(map[string]interface{})
