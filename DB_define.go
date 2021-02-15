@@ -11,8 +11,6 @@ type DBInterface interface {
     Insert(sql string,bindarray []interface{})(int64,error)
     /**    执行指定的SQL语句，返回影响到的条数    */
     Exec(sql string,bindarray []interface{})(int64,error)
-    /**    正在执行sql的部分代码，更新删除写入之类的操作    */
-    pdoexec(sql string,bindarray []interface{})sql.Result
     /**    返回一行数据，map类型    */
     SelectOne(sql string,bindarray []interface{})(map[string]string,error)
     /**    查询一行数据返回一个结构体    */
@@ -21,10 +19,14 @@ type DBInterface interface {
     SelectAll(sql string,bindarray []interface{})([]map[string]string,error)
     /**    查询多行数据，返回struct对象的数组    */
     SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error
-    /**    执行Query方法，返回rows    */
-    query(sql string,bindarray []interface{})(*sql.Rows,[]interface{},[]sql.RawBytes,[]string)
     /**    查询count    */
     SelectVar(sql string,bindarray []interface{})(string,error)
+    /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
+    Rollback()
+    /**    提交事务    */
+    Commit(recover interface{})
+    /**    提交事务，并且还继续开启事务    */
+    Commit_NewTX()
 
 }
 
@@ -36,6 +38,9 @@ type DB_SelectOneObjectHandleFunc func(sql string,bindarray []interface{},orm_pt
 type DB_SelectAllHandleFunc func(sql string,bindarray []interface{})([]map[string]string,error)
 type DB_SelectallObjectHandleFunc func(sql string,bindarray []interface{},orm_ptr interface{})error
 type DB_SelectVarHandleFunc func(sql string,bindarray []interface{})(string,error)
+type DB_RollbackHandleFunc func()
+type DB_CommitHandleFunc func(recover interface{})
+type DB_Commit_NewTXHandleFunc func()
 
 /**
 不带事务的数据库操作;
@@ -74,6 +79,12 @@ type DBMiddleware struct{
     SelectallObjectHandleFuncs []DB_SelectallObjectHandleFunc
     SelectVarindex int
     SelectVarHandleFuncs []DB_SelectVarHandleFunc
+    Rollbackindex int
+    RollbackHandleFuncs []DB_RollbackHandleFunc
+    Commitindex int
+    CommitHandleFuncs []DB_CommitHandleFunc
+    Commit_NewTXindex int
+    Commit_NewTXHandleFuncs []DB_Commit_NewTXHandleFunc
     DB *DB
     //日志记录的目标文件
     zloger *zerolog.Logger
@@ -90,6 +101,14 @@ func (this *DBMiddleware) SetZloger(l *zerolog.Logger) *DBMiddleware {
     return this
 }
 
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) Insert(sql string,bindarray []interface{})(int64,error) {
+    this.Insertindex = 0
+    return this.Next_CALL_Insert(sql,bindarray)
+}
 
 func (this *DBMiddleware) Add_Insert(middlewares ...DB_InsertHandleFunc) DB_InsertHandleFunc {
     // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
@@ -122,13 +141,7 @@ func (this *DBMiddleware) Add_Insert(middlewares ...DB_InsertHandleFunc) DB_Inse
 	}
 	return this.Next_CALL_Insert
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) Insert(sql string,bindarray []interface{})(int64,error) {
-    this.Insertindex = 0
-    return this.Next_CALL_Insert(sql,bindarray)
-}
+
 
 /**
 */
@@ -146,6 +159,14 @@ func (this *DBMiddleware) Next_CALL_Insert(sql string,bindarray []interface{})(i
 
 	this.Insertindex++
 	return this.InsertHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) Exec(sql string,bindarray []interface{})(int64,error) {
+    this.Execindex = 0
+    return this.Next_CALL_Exec(sql,bindarray)
 }
 
 func (this *DBMiddleware) Add_Exec(middlewares ...DB_ExecHandleFunc) DB_ExecHandleFunc {
@@ -179,13 +200,7 @@ func (this *DBMiddleware) Add_Exec(middlewares ...DB_ExecHandleFunc) DB_ExecHand
 	}
 	return this.Next_CALL_Exec
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) Exec(sql string,bindarray []interface{})(int64,error) {
-    this.Execindex = 0
-    return this.Next_CALL_Exec(sql,bindarray)
-}
+
 
 /**
 */
@@ -203,6 +218,14 @@ func (this *DBMiddleware) Next_CALL_Exec(sql string,bindarray []interface{})(int
 
 	this.Execindex++
 	return this.ExecHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) SelectOne(sql string,bindarray []interface{})(map[string]string,error) {
+    this.SelectOneindex = 0
+    return this.Next_CALL_SelectOne(sql,bindarray)
 }
 
 func (this *DBMiddleware) Add_SelectOne(middlewares ...DB_SelectOneHandleFunc) DB_SelectOneHandleFunc {
@@ -236,13 +259,7 @@ func (this *DBMiddleware) Add_SelectOne(middlewares ...DB_SelectOneHandleFunc) D
 	}
 	return this.Next_CALL_SelectOne
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) SelectOne(sql string,bindarray []interface{})(map[string]string,error) {
-    this.SelectOneindex = 0
-    return this.Next_CALL_SelectOne(sql,bindarray)
-}
+
 
 /**
 */
@@ -260,6 +277,14 @@ func (this *DBMiddleware) Next_CALL_SelectOne(sql string,bindarray []interface{}
 
 	this.SelectOneindex++
 	return this.SelectOneHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error {
+    this.SelectOneObjectindex = 0
+    return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
 }
 
 func (this *DBMiddleware) Add_SelectOneObject(middlewares ...DB_SelectOneObjectHandleFunc) DB_SelectOneObjectHandleFunc {
@@ -293,13 +318,7 @@ func (this *DBMiddleware) Add_SelectOneObject(middlewares ...DB_SelectOneObjectH
 	}
 	return this.Next_CALL_SelectOneObject
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error {
-    this.SelectOneObjectindex = 0
-    return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
-}
+
 
 /**
 */
@@ -317,6 +336,14 @@ func (this *DBMiddleware) Next_CALL_SelectOneObject(sql string,bindarray []inter
 
 	this.SelectOneObjectindex++
 	return this.SelectOneObjectHandleFuncs[index](sql,bindarray,orm_ptr)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) SelectAll(sql string,bindarray []interface{})([]map[string]string,error) {
+    this.SelectAllindex = 0
+    return this.Next_CALL_SelectAll(sql,bindarray)
 }
 
 func (this *DBMiddleware) Add_SelectAll(middlewares ...DB_SelectAllHandleFunc) DB_SelectAllHandleFunc {
@@ -350,13 +377,7 @@ func (this *DBMiddleware) Add_SelectAll(middlewares ...DB_SelectAllHandleFunc) D
 	}
 	return this.Next_CALL_SelectAll
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) SelectAll(sql string,bindarray []interface{})([]map[string]string,error) {
-    this.SelectAllindex = 0
-    return this.Next_CALL_SelectAll(sql,bindarray)
-}
+
 
 /**
 */
@@ -374,6 +395,14 @@ func (this *DBMiddleware) Next_CALL_SelectAll(sql string,bindarray []interface{}
 
 	this.SelectAllindex++
 	return this.SelectAllHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error {
+    this.SelectallObjectindex = 0
+    return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
 }
 
 func (this *DBMiddleware) Add_SelectallObject(middlewares ...DB_SelectallObjectHandleFunc) DB_SelectallObjectHandleFunc {
@@ -407,13 +436,7 @@ func (this *DBMiddleware) Add_SelectallObject(middlewares ...DB_SelectallObjectH
 	}
 	return this.Next_CALL_SelectallObject
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error {
-    this.SelectallObjectindex = 0
-    return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
-}
+
 
 /**
 */
@@ -431,6 +454,14 @@ func (this *DBMiddleware) Next_CALL_SelectallObject(sql string,bindarray []inter
 
 	this.SelectallObjectindex++
 	return this.SelectallObjectHandleFuncs[index](sql,bindarray,orm_ptr)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) SelectVar(sql string,bindarray []interface{})(string,error) {
+    this.SelectVarindex = 0
+    return this.Next_CALL_SelectVar(sql,bindarray)
 }
 
 func (this *DBMiddleware) Add_SelectVar(middlewares ...DB_SelectVarHandleFunc) DB_SelectVarHandleFunc {
@@ -464,13 +495,7 @@ func (this *DBMiddleware) Add_SelectVar(middlewares ...DB_SelectVarHandleFunc) D
 	}
 	return this.Next_CALL_SelectVar
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *DBMiddleware) SelectVar(sql string,bindarray []interface{})(string,error) {
-    this.SelectVarindex = 0
-    return this.Next_CALL_SelectVar(sql,bindarray)
-}
+
 
 /**
 */
@@ -488,6 +513,186 @@ func (this *DBMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{}
 
 	this.SelectVarindex++
 	return this.SelectVarHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) Rollback() {
+    this.Rollbackindex = 0
+    this.Next_CALL_Rollback()
+}
+
+func (this *DBMiddleware) Add_Rollback(middlewares ...DB_RollbackHandleFunc) DB_RollbackHandleFunc {
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    if len(this.RollbackHandleFuncs) == 0 {
+        this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, func()  {
+            defer func(start time.Time) {
+                if this.zloger != nil {
+                    tc := time.Since(start).String()
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Rollback").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
+                }
+            }(time.Now())
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","Rollback").Logger()
+                zloger.Debug().Msg("调起")
+            }
+            this.Next_CALL_Rollback()
+        })
+    }
+
+    //
+	if this.RollbackHandleFuncs == nil {
+		this.RollbackHandleFuncs = make([]DB_RollbackHandleFunc, 0)
+	}
+	for _, mid := range middlewares {
+		this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, mid)
+	}
+	return this.Next_CALL_Rollback
+}
+
+
+/**
+*/
+func (this *DBMiddleware) Next_CALL_Rollback(){
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.RollbackHandleFuncs) == 0 {
+		this.Add_Rollback(this.DB.Rollback)
+	} else if this.Rollbackindex == 0 {
+        // 👇👇---- 原始函数入口
+		this.RollbackHandleFuncs = append(this.RollbackHandleFuncs, this.DB.Rollback)
+	}
+    index := this.Rollbackindex
+	if this.Rollbackindex >= len(this.RollbackHandleFuncs) {
+        return
+	}
+
+	this.Rollbackindex++
+    this.RollbackHandleFuncs[index]()
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) Commit(recover interface{}) {
+    this.Commitindex = 0
+    this.Next_CALL_Commit(recover)
+}
+
+func (this *DBMiddleware) Add_Commit(middlewares ...DB_CommitHandleFunc) DB_CommitHandleFunc {
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    if len(this.CommitHandleFuncs) == 0 {
+        this.CommitHandleFuncs = append(this.CommitHandleFuncs, func(recover interface{})  {
+            defer func(start time.Time) {
+                if this.zloger != nil {
+                    tc := time.Since(start).String()
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Commit").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
+                }
+            }(time.Now())
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{recover}).
+                            Str("func","Commit").Logger()
+                zloger.Debug().Msg("调起")
+            }
+            this.Next_CALL_Commit(recover)
+        })
+    }
+
+    //
+	if this.CommitHandleFuncs == nil {
+		this.CommitHandleFuncs = make([]DB_CommitHandleFunc, 0)
+	}
+	for _, mid := range middlewares {
+		this.CommitHandleFuncs = append(this.CommitHandleFuncs, mid)
+	}
+	return this.Next_CALL_Commit
+}
+
+
+/**
+*/
+func (this *DBMiddleware) Next_CALL_Commit(recover interface{}){
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.CommitHandleFuncs) == 0 {
+		this.Add_Commit(this.DB.Commit)
+	} else if this.Commitindex == 0 {
+        // 👇👇---- 原始函数入口
+		this.CommitHandleFuncs = append(this.CommitHandleFuncs, this.DB.Commit)
+	}
+    index := this.Commitindex
+	if this.Commitindex >= len(this.CommitHandleFuncs) {
+        return
+	}
+
+	this.Commitindex++
+    this.CommitHandleFuncs[index](recover)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *DBMiddleware) Commit_NewTX() {
+    this.Commit_NewTXindex = 0
+    this.Next_CALL_Commit_NewTX()
+}
+
+func (this *DBMiddleware) Add_Commit_NewTX(middlewares ...DB_Commit_NewTXHandleFunc) DB_Commit_NewTXHandleFunc {
+    // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
+    if len(this.Commit_NewTXHandleFuncs) == 0 {
+        this.Commit_NewTXHandleFuncs = append(this.Commit_NewTXHandleFuncs, func()  {
+            defer func(start time.Time) {
+                if this.zloger != nil {
+                    tc := time.Since(start).String()
+                    zloger := this.zloger.With().Str("fun_middle_type","timeuse").
+                                Str("func","Commit_NewTX").Str("timeuse",tc).Logger()
+                    zloger.Debug().Msg("耗时")
+                }
+            }(time.Now())
+            if this.zloger != nil {
+                zloger := this.zloger.With().Str("fun_middle_type","call_args").
+                            Interface("call_args",[]interface{}{}).
+                            Str("func","Commit_NewTX").Logger()
+                zloger.Debug().Msg("调起")
+            }
+            this.Next_CALL_Commit_NewTX()
+        })
+    }
+
+    //
+	if this.Commit_NewTXHandleFuncs == nil {
+		this.Commit_NewTXHandleFuncs = make([]DB_Commit_NewTXHandleFunc, 0)
+	}
+	for _, mid := range middlewares {
+		this.Commit_NewTXHandleFuncs = append(this.Commit_NewTXHandleFuncs, mid)
+	}
+	return this.Next_CALL_Commit_NewTX
+}
+
+
+/**
+*/
+func (this *DBMiddleware) Next_CALL_Commit_NewTX(){
+    // 调起的时候，追加源功能函数。因为源功能函数没有调起NEXT，所以只有执行到它，必定阻断后面的所有中间件函数。
+	if len(this.Commit_NewTXHandleFuncs) == 0 {
+		this.Add_Commit_NewTX(this.DB.Commit_NewTX)
+	} else if this.Commit_NewTXindex == 0 {
+        // 👇👇---- 原始函数入口
+		this.Commit_NewTXHandleFuncs = append(this.Commit_NewTXHandleFuncs, this.DB.Commit_NewTX)
+	}
+    index := this.Commit_NewTXindex
+	if this.Commit_NewTXindex >= len(this.Commit_NewTXHandleFuncs) {
+        return
+	}
+
+	this.Commit_NewTXindex++
+    this.Commit_NewTXHandleFuncs[index]()
 }
 
 //检测接口是否被完整的实现了，如果没有实现，那么编译不通过

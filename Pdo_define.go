@@ -11,8 +11,6 @@ type PdoInterface interface {
     Insert(sql string,bindarray []interface{})(int64,error)
     /**    执行指定的SQL语句，返回影响到的条数    */
     Exec(sql string,bindarray []interface{})(int64,error)
-    /**    正在执行sql的部分代码，更新删除写入之类的操作    */
-    pdoexec(sql string,bindarray []interface{})sql.Result
     /**    返回一行数据，map类型    */
     SelectOne(sql string,bindarray []interface{})(map[string]string,error)
     /**    查询一行数据返回一个结构体    */
@@ -23,8 +21,6 @@ type PdoInterface interface {
     SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error
     /**    提交事务    */
     Commit(recover interface{})
-    /**    执行Query方法，返回rows    */
-    query(sql string,bindarray []interface{})(*sql.Rows,[]interface{},[]sql.RawBytes,[]string)
     /**    当运行中，有一条sql错误了，那么回滚，在这个事务期间的所有操作全部报废    */
     Rollback()
     /**    查询count    */
@@ -106,6 +102,14 @@ func (this *PdoMiddleware) SetZloger(l *zerolog.Logger) *PdoMiddleware {
 }
 
 
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) Insert(sql string,bindarray []interface{})(int64,error) {
+    this.Insertindex = 0
+    return this.Next_CALL_Insert(sql,bindarray)
+}
+
 func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_InsertHandleFunc {
     // 第一个添加的是日志，如果设置了写出源的话，比如,os.Stdout
     if len(this.InsertHandleFuncs) == 0 {
@@ -137,13 +141,7 @@ func (this *PdoMiddleware) Add_Insert(middlewares ...Pdo_InsertHandleFunc) Pdo_I
 	}
 	return this.Next_CALL_Insert
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) Insert(sql string,bindarray []interface{})(int64,error) {
-    this.Insertindex = 0
-    return this.Next_CALL_Insert(sql,bindarray)
-}
+
 
 /**
 */
@@ -161,6 +159,14 @@ func (this *PdoMiddleware) Next_CALL_Insert(sql string,bindarray []interface{})(
 
 	this.Insertindex++
 	return this.InsertHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) Exec(sql string,bindarray []interface{})(int64,error) {
+    this.Execindex = 0
+    return this.Next_CALL_Exec(sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecHandleFunc {
@@ -194,13 +200,7 @@ func (this *PdoMiddleware) Add_Exec(middlewares ...Pdo_ExecHandleFunc) Pdo_ExecH
 	}
 	return this.Next_CALL_Exec
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) Exec(sql string,bindarray []interface{})(int64,error) {
-    this.Execindex = 0
-    return this.Next_CALL_Exec(sql,bindarray)
-}
+
 
 /**
 */
@@ -218,6 +218,14 @@ func (this *PdoMiddleware) Next_CALL_Exec(sql string,bindarray []interface{})(in
 
 	this.Execindex++
 	return this.ExecHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) SelectOne(sql string,bindarray []interface{})(map[string]string,error) {
+    this.SelectOneindex = 0
+    return this.Next_CALL_SelectOne(sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc) Pdo_SelectOneHandleFunc {
@@ -251,13 +259,7 @@ func (this *PdoMiddleware) Add_SelectOne(middlewares ...Pdo_SelectOneHandleFunc)
 	}
 	return this.Next_CALL_SelectOne
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) SelectOne(sql string,bindarray []interface{})(map[string]string,error) {
-    this.SelectOneindex = 0
-    return this.Next_CALL_SelectOne(sql,bindarray)
-}
+
 
 /**
 */
@@ -275,6 +277,14 @@ func (this *PdoMiddleware) Next_CALL_SelectOne(sql string,bindarray []interface{
 
 	this.SelectOneindex++
 	return this.SelectOneHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error {
+    this.SelectOneObjectindex = 0
+    return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
 }
 
 func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjectHandleFunc) Pdo_SelectOneObjectHandleFunc {
@@ -308,13 +318,7 @@ func (this *PdoMiddleware) Add_SelectOneObject(middlewares ...Pdo_SelectOneObjec
 	}
 	return this.Next_CALL_SelectOneObject
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) SelectOneObject(sql string,bindarray []interface{},orm_ptr interface{})error {
-    this.SelectOneObjectindex = 0
-    return this.Next_CALL_SelectOneObject(sql,bindarray,orm_ptr)
-}
+
 
 /**
 */
@@ -332,6 +336,14 @@ func (this *PdoMiddleware) Next_CALL_SelectOneObject(sql string,bindarray []inte
 
 	this.SelectOneObjectindex++
 	return this.SelectOneObjectHandleFuncs[index](sql,bindarray,orm_ptr)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) SelectAll(sql string,bindarray []interface{})([]map[string]string,error) {
+    this.SelectAllindex = 0
+    return this.Next_CALL_SelectAll(sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc) Pdo_SelectAllHandleFunc {
@@ -365,13 +377,7 @@ func (this *PdoMiddleware) Add_SelectAll(middlewares ...Pdo_SelectAllHandleFunc)
 	}
 	return this.Next_CALL_SelectAll
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) SelectAll(sql string,bindarray []interface{})([]map[string]string,error) {
-    this.SelectAllindex = 0
-    return this.Next_CALL_SelectAll(sql,bindarray)
-}
+
 
 /**
 */
@@ -389,6 +395,14 @@ func (this *PdoMiddleware) Next_CALL_SelectAll(sql string,bindarray []interface{
 
 	this.SelectAllindex++
 	return this.SelectAllHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error {
+    this.SelectallObjectindex = 0
+    return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
 }
 
 func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjectHandleFunc) Pdo_SelectallObjectHandleFunc {
@@ -422,13 +436,7 @@ func (this *PdoMiddleware) Add_SelectallObject(middlewares ...Pdo_SelectallObjec
 	}
 	return this.Next_CALL_SelectallObject
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) SelectallObject(sql string,bindarray []interface{},orm_ptr interface{})error {
-    this.SelectallObjectindex = 0
-    return this.Next_CALL_SelectallObject(sql,bindarray,orm_ptr)
-}
+
 
 /**
 */
@@ -446,6 +454,14 @@ func (this *PdoMiddleware) Next_CALL_SelectallObject(sql string,bindarray []inte
 
 	this.SelectallObjectindex++
 	return this.SelectallObjectHandleFuncs[index](sql,bindarray,orm_ptr)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) Commit(recover interface{}) {
+    this.Commitindex = 0
+    this.Next_CALL_Commit(recover)
 }
 
 func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_CommitHandleFunc {
@@ -479,13 +495,7 @@ func (this *PdoMiddleware) Add_Commit(middlewares ...Pdo_CommitHandleFunc) Pdo_C
 	}
 	return this.Next_CALL_Commit
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) Commit(recover interface{}) {
-    this.Commitindex = 0
-    this.Next_CALL_Commit(recover)
-}
+
 
 /**
 */
@@ -504,6 +514,14 @@ func (this *PdoMiddleware) Next_CALL_Commit(recover interface{}){
 
 	this.Commitindex++
     this.CommitHandleFuncs[index](recover)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) Rollback() {
+    this.Rollbackindex = 0
+    this.Next_CALL_Rollback()
 }
 
 func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) Pdo_RollbackHandleFunc {
@@ -537,13 +555,7 @@ func (this *PdoMiddleware) Add_Rollback(middlewares ...Pdo_RollbackHandleFunc) P
 	}
 	return this.Next_CALL_Rollback
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) Rollback() {
-    this.Rollbackindex = 0
-    this.Next_CALL_Rollback()
-}
+
 
 /**
 */
@@ -562,6 +574,14 @@ func (this *PdoMiddleware) Next_CALL_Rollback(){
 
 	this.Rollbackindex++
     this.RollbackHandleFuncs[index]()
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) SelectVar(sql string,bindarray []interface{})(string,error) {
+    this.SelectVarindex = 0
+    return this.Next_CALL_SelectVar(sql,bindarray)
 }
 
 func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc) Pdo_SelectVarHandleFunc {
@@ -595,13 +615,7 @@ func (this *PdoMiddleware) Add_SelectVar(middlewares ...Pdo_SelectVarHandleFunc)
 	}
 	return this.Next_CALL_SelectVar
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) SelectVar(sql string,bindarray []interface{})(string,error) {
-    this.SelectVarindex = 0
-    return this.Next_CALL_SelectVar(sql,bindarray)
-}
+
 
 /**
 */
@@ -619,6 +633,14 @@ func (this *PdoMiddleware) Next_CALL_SelectVar(sql string,bindarray []interface{
 
 	this.SelectVarindex++
 	return this.SelectVarHandleFuncs[index](sql,bindarray)
+}
+
+/**
+* 中间件，替代函数入口
+*/
+func (this *PdoMiddleware) Commit_NewTX() {
+    this.Commit_NewTXindex = 0
+    this.Next_CALL_Commit_NewTX()
 }
 
 func (this *PdoMiddleware) Add_Commit_NewTX(middlewares ...Pdo_Commit_NewTXHandleFunc) Pdo_Commit_NewTXHandleFunc {
@@ -652,13 +674,7 @@ func (this *PdoMiddleware) Add_Commit_NewTX(middlewares ...Pdo_Commit_NewTXHandl
 	}
 	return this.Next_CALL_Commit_NewTX
 }
-/**
-* 中间件，替代函数入口
-*/
-func (this *PdoMiddleware) Commit_NewTX() {
-    this.Commit_NewTXindex = 0
-    this.Next_CALL_Commit_NewTX()
-}
+
 
 /**
 */

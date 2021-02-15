@@ -132,3 +132,17 @@ func (this *DB) SelectVar(sql string, bindarray []interface{}) (string, error) {
 	}
 	return "0", errors.New("not found")
 }
+
+func (this *DB) Rollback() {
+	panic("db类，不需要回滚")
+}
+
+/**    提交事务    */
+func (this *DB) Commit(recover interface{}) {
+	panic("db类，不需要事务提交")
+}
+
+/**    提交事务，并且还继续开启事务    */
+func (this *DB) Commit_NewTX() {
+	panic("db类，不需要事务提交")
+}
