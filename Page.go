@@ -18,5 +18,5 @@ func (this *Page) SqlLImit() string {
 
 func (this *Page) SetTotal(Total int) {
 	this.Total = Total
-	this.TotalPages = int(math.Ceil(float64(Total / this.Prepage)))
+	this.TotalPages = int(math.Ceil(float64(Total) / float64(this.Prepage)))
 }
