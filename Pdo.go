@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	zlog "github.com/rs/zerolog/log"
 	"reflect"
 )
 
@@ -28,6 +29,10 @@ func (this *Pdo) Commit_NewTX() {
 func (this *Pdo) Commit(recover interface{}) {
 	var err error
 	if recover != nil { // 👈👈---- 发现有错误了
+		Zloger := zlog.With().Str("library", "goorm").
+			Str("class", "Commit").
+			Logger()
+		Zloger.Error().Interface("recover", recover).Msg("提交错误")
 		this.Rollback()
 	} else { // 👈👈----  没有错误，提交
 		err = this.TX.Commit()
