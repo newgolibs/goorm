@@ -22,12 +22,12 @@ func (this *DB) Exec(sql string, bindarray []interface{}) (int64, error) {
 func (this *DB) pdoexec(sql string, bindarray []interface{}) sql.Result {
 	stmt, err := this.TX.Prepare(sql)
 	if err != nil {
-		panic("pdoexec error:" + err.Error())
+		panic("sql:" + sql + ",pdoexec error:" + err.Error())
 	}
 	defer stmt.Close() // Prepared statements take up server resources and should be closed after use.
 	Result, err := stmt.Exec(bindarray...)
 	if err != nil {
-		panic("stmt.Exec error:" + err.Error())
+		panic("sql:" + sql + ",stmt.Exec error:" + err.Error())
 	}
 	return Result
 }
